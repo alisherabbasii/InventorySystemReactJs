@@ -1,6 +1,6 @@
 export const OpenModal = (props: any) => {
     return (
-        <div className={props?.modalWithinModal ? "ml-14 w-11/12 items-center fixed bg-opacity-90 fixed inset-0  bg-opacity-50 backdrop-blur-sm flex items-center justify-center w-3/4 z-50 mt-14" : "fixed  flex items-center justify-center w-2/4 z-50 mt-14"} style={{zIndex: 99999}}>
+        <div className={props?.modalWithinModal ? "ml-44 w-11/12 items-center fixed bg-opacity-90 fixed inset-0  bg-opacity-50 backdrop-blur-sm flex items-center justify-center w-3/4 z-50 mt-14" : "fixed  flex items-center justify-center w-2/4 z-50 mt-14"} style={{zIndex: 99999}}>
             <div className="bg-white rounded-lg shadow-xl w-full p-6 relative">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-bold">

@@ -1,21 +1,66 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { OpenModal } from "../Generic/OpenModal";
+import { toast } from "react-toastify";
+import { getAllUsers } from "../../api/auth";
+import { formatDate } from "../Generic/FormatDate";
 
-const CustomersTable = () => {
-  const [customers] = useState([
-    { id: 1, accountNo: "1103120", name: "Ali Sher", balance: "1,105", address: "Jeddah kilo 8", phone: "+966512548568", date: "11/01/2024" },
-    { id: 2, accountNo: "1103112", name: "Abbasi", balance: "1,105", address: "Jeddah kilo 8", phone: "+966512548568", date: "11/01/2024" },
-    { id: 3, accountNo: "1103111", name: "Abif", balance: "1,105", address: "Jeddah kilo 8", phone: "+966512548568", date: "11/01/2024" },
-    { id: 4, accountNo: "1103110", name: "Saad", balance: "1,105", address: "Jeddah kilo 8", phone: "+966512548568", date: "11/01/2024" },
-    { id: 5, accountNo: "1103114", name: "Talha", balance: "1,105", address: "Jeddah kilo 8", phone: "+966512548568", date: "11/01/2024" },
-  ]);
+const CustomersTable = (props:any) => {
+  const [customers,setCustomers] = useState([]);
+  const [customerNo,setCustomerNo]  = useState('');
+  const [customerName,setCustomerName]  = useState('');
+  const [allCustomers, setAllCustomers] = useState([]);
+
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+
+  useEffect(()=>{
+    getUsers();
+  },[])
+
+  const getUsers = async() => {
+    try {
+      const response = await getAllUsers();
+      if(response.data){
+        console.log("all users are:::",response.data);
+        setCustomers(response.data);
+      setAllCustomers(response.data); 
+      }
+      
+    } catch (error) {
+      console.error('error in fetching party:', error);
+    }
+  };
+
+  const handleEdit = (customer:any) => {
+      props.onEdit(customer);
+  } 
+
+  const searchByAccountNo = () => {
+    const filteredCustomers = allCustomers.filter((customer: any) =>
+      customer.party_no.toString().includes(customerNo)
+    );
+    setCustomers(filteredCustomers);
+  };
+  
+  const searchByAccountName = () => {
+    const filteredCustomers = allCustomers.filter((customer: any) =>
+      customer.name.toLowerCase().includes(customerName.toLowerCase())
+    );
+    setCustomers(filteredCustomers);
+  };
+  
+  // Reset Filters
+  const resetFilters = () => {
+    setCustomerNo("");
+    setCustomerName("");
+    setCustomers(allCustomers); // Reset to original list
+  };
 
   return (
     
     <div className="p-4 ">
       {/* <h2 className="text-2xl font-bold mb-4">Customers</h2> */}
+      
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
           <label className="block mb-2 font-medium">Customer Account no</label>
@@ -24,12 +69,15 @@ const CustomersTable = () => {
               type="text"
               placeholder="Enter Account No"
               className="border border-[#c1c5cd] rounded-l px-3 py-1 flex-1"
+              value={customerNo}
+              onChange={(e) => setCustomerNo(e.target.value)}
             />
-            <button className="bg-blue-500 border-[#c1c5cd] text-white px-4 py-1 rounded-r">
+            <button onClick={()=>{searchByAccountNo()}} className="bg-blue-500 border-[#c1c5cd] text-white px-4 py-1 rounded-r">
               🔍
             </button>
           </div>
         </div>
+       
         <div>
           <label className="block mb-2 font-medium">Customer Name</label>
           <div className="flex">
@@ -37,14 +85,24 @@ const CustomersTable = () => {
               type="text"
               placeholder="Enter the Name"
               className="border border-[#c1c5cd] rounded-l px-3 py-1 flex-1"
+              value={customerName}
+              onChange={(e) => setCustomerName(e.target.value)}
             />
-            <button className="bg-blue-500 text-white px-4 py-1 rounded-r">
+            <button onClick={()=>{searchByAccountName()}} className="bg-blue-500 text-white px-4 py-1 rounded-r">
               🔍
             </button>
           </div>
         </div>
+        
       </div>
-
+      <div className="mb-4 flex justify-end">
+  <button
+    onClick={resetFilters}
+    className="bg-sky-500 text-white px-4 py-1 rounded"
+  >
+    Reset
+  </button>
+</div>
       <div className="overflow-x-auto">
         <table className="w-full border-collapse ">
           <thead className="bg-blue-100">
@@ -64,16 +122,16 @@ const CustomersTable = () => {
                 (currentPage - 1) * itemsPerPage,
                 currentPage * itemsPerPage
               )
-              .map((customer) => (
+              .map((customer:any) => (
                 <tr key={customer.id} className="text-center bg-slate-50">
-                  <td className="border-b border-[#EAECF0] px-4 py-2">{customer.accountNo}</td>
+                  <td className="border-b border-[#EAECF0] px-4 py-2">{customer.party_no}</td>
                   <td className="border-b border-[#EAECF0] px-4 py-2">{customer.name}</td>
                   <td className="border-b border-[#EAECF0] px-4 py-2">{customer.balance}</td>
                   <td className="border-b border-[#EAECF0] px-4 py-2">{customer.address}</td>
-                  <td className="border-b border-[#EAECF0] px-4 py-2">{customer.phone}</td>
-                  <td className="border-b border-[#EAECF0] px-4 py-2">{customer.date}</td>
+                  <td className="border-b border-[#EAECF0] px-4 py-2">{customer.tax_number}</td>
+                  <td className="border-b border-[#EAECF0] px-4 py-2">{formatDate(customer.createdAt)}</td>
                   <td className="border-b border-[#EAECF0] px-4 py-2">
-                    <button className="bg-blue-500 text-white px-3 py-1 rounded">
+                    <button onClick={() => {handleEdit(customer)}} className="bg-blue-500 text-white px-3 py-1 rounded">
                       Edit
                     </button>
                   </td>

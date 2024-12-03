@@ -8,7 +8,7 @@ import { PurchaseReturn } from "./PurchaseReturn";
 export const SalesNPurchases = () => {
   // States for input fields
 
-  const [activeTab, setActiveTab] = useState("invoice");
+  const [activeTab, setActiveTab] = useState("quotation");
 
   // State for table data
   const [items, setItems] = useState([
@@ -82,6 +82,17 @@ export const SalesNPurchases = () => {
 
       {/* Tabs */}
       <div className="flex space-x-2 mb-6">
+      <button
+          onClick={() => setActiveTab("quotation")}
+          className={
+            "px-4 py-2 rounded " +
+            (activeTab === "quotation"
+              ? "bg-blue-500 text-white"
+              : "bg-zinc-100 text-black")
+          }
+        >
+          Quotation
+        </button>
         <button
           onClick={() => setActiveTab("invoice")}
           className={
@@ -104,17 +115,7 @@ export const SalesNPurchases = () => {
         >
           Sales Return
         </button>
-        <button
-          onClick={() => setActiveTab("quotation")}
-          className={
-            "px-4 py-2 rounded " +
-            (activeTab === "quotation"
-              ? "bg-blue-500 text-white"
-              : "bg-zinc-100 text-black")
-          }
-        >
-          Quotation
-        </button>
+      
 
         <div className="flex space-x-2" style={{marginLeft:'6rem'}}>
         <button

@@ -96,6 +96,19 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
     }
   ];
 
+  const adminItems: NavItem[] = [
+    {
+      path: '/addUser',
+      name: 'Add User',
+      icon: <Users size={20} />,
+    },
+    {
+      path: '/exit',
+      name: 'Exit',
+      icon: <img src={ExitIcon} height={20} width={20} />
+
+    }
+  ];
   useEffect(() => {
     const keyHandler = ({ keyCode }: KeyboardEvent) => {
       if (!sidebarOpen || keyCode !== 27) return;
@@ -115,7 +128,12 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
   }, [sidebarExpanded]);
 
   const getNavItems = (): NavItem[] => {
-    return sidebarItems;
+    if(userType=='admin'){
+      return adminItems
+    }else{
+      return sidebarItems
+    }
+
   };
 
   const getLinkClass = (isActive: boolean): string => {

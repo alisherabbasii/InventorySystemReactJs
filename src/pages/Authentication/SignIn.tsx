@@ -5,6 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { Loader } from '../../components/Loader';
 import { useDispatch } from 'react-redux';
 import { authActions } from '../../redux/Slices/AuthSlice';
+import { signin } from '../../api/auth';
 
 export default function SignIn() {
   const navigate = useNavigate();
@@ -16,9 +17,14 @@ export default function SignIn() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      dispatch(authActions.login());
-      navigate('/customerAndSuppliers');
-      setIsLoading(false);
+      const response = await signin({ username: username.toLowerCase(), password });
+      if(response){
+        toast.success("Sign in successful");
+        dispatch(authActions.login());
+        navigate('/customerAndSuppliers');
+        setIsLoading(false);
+      }
+      
      
     } catch (error) {
       console.error('Signin failed:', error);
@@ -125,15 +131,14 @@ export default function SignIn() {
               </form>
             </div>
             {/* <hr className="my-4 border-gray-200" /> */}
-            {/* <p className="mt-4  text-center text-sm text-gray-600">
-              Don't have an account?
+            <p className="mt-4  text-center text-sm text-gray-600">
               <Link
-                to="/auth/signup"
+                to="/auth/admin"
                 className="font-medium text-blue-500 hover:text-blue-600"
               >
-                Signup
+                Admin Login
               </Link>
-            </p> */}
+            </p>
 
           
           </div>

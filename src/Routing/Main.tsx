@@ -9,10 +9,14 @@ import SignIn from "../pages/Authentication/SignIn";
 import PageTitle from "../components/PageTitle";
 import { CustomerNSuppliers } from "../components/CustomerNSuppliers";
 import { SalesNPurchases } from "../components/SalesNPurchase";
-import { PaymentNReceipt } from "../components/PaymentNReceipt";
-import { StockControls } from "../components/StockControls";
 import { GeneralAccounts } from "../components/GeneralAccounts";
 import { Exit } from "../components/Exit";
+import StockManagementForm from "../components/StockControls";
+import PaymentVouchers from "../components/PaymentNReceipt";
+import { AdminLogin } from "../components/Admin/Login";
+import AdminManagement from "../components/Admin/AddUser";
+
+
 
 const renderGeneralRoutes = () => (
   <>
@@ -41,7 +45,7 @@ const renderGeneralRoutes = () => (
       element={
         <>
           <PageTitle title="Payment & Receipt" />
-          <PaymentNReceipt />
+          <PaymentVouchers />
         </>
       }
     />
@@ -51,7 +55,7 @@ const renderGeneralRoutes = () => (
       element={
         <>
           <PageTitle title="Stock Controls" />
-          <StockControls />
+          <StockManagementForm   />
         </>
       }
     />
@@ -66,7 +70,83 @@ const renderGeneralRoutes = () => (
       }
     />
 
+    {1==1 && <Route
+      path="/exit"
+      element={
+        <>
+          <PageTitle title="Exit" />
+          <Exit />
+        </>
+      }
+    />
+  }
+    <Route path="*" element={<Navigate to="/customerAndSuppliers" replace />} />
+  </>
+);
+
+const renderAdminRoutes = () => (
+  <>
+  <Route
+      path="/addUser"
+      element={
+        <>
+          <PageTitle title="Add User" />
+          <AdminManagement />
+        </>
+      }
+    />
+
     <Route
+      path="/customerAndSuppliers"
+      element={
+        <>
+          <PageTitle title="Customers & Suppliers" />
+          <CustomerNSuppliers />
+        </>
+      }
+    />
+
+    <Route
+      path="/salesAndPurchases"
+      element={
+        <>
+          <PageTitle title="Sales & Purchases" />
+          <SalesNPurchases />
+        </>
+      }
+    />
+
+    <Route
+      path="/paymentAndReceipt"
+      element={
+        <>
+          <PageTitle title="Payment & Receipt" />
+          <PaymentVouchers />
+        </>
+      }
+    />
+
+    <Route
+      path="/stockcontrols"
+      element={
+        <>
+          <PageTitle title="Stock Controls" />
+          <StockManagementForm   />
+        </>
+      }
+    />
+
+    <Route
+      path="/generalAccount"
+      element={
+        <>
+          <PageTitle title="General Account" />
+          <GeneralAccounts />
+        </>
+      }
+    />
+
+  <Route
       path="/exit"
       element={
         <>
@@ -82,7 +162,7 @@ const renderGeneralRoutes = () => (
 const MainRouting = () => {
   const { pathname } = useLocation();
   const isLoggedIn = useSelector((state: any) => state.auth.isAuthenticated);
-
+  const userType = useSelector((state: any) => state.auth.userType);
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
@@ -90,7 +170,7 @@ const MainRouting = () => {
   if (isLoggedIn) {
     return (
       <DefaultLayout>
-        <Routes>{renderGeneralRoutes()}</Routes>
+        <Routes>{userType=='admin' ? renderAdminRoutes() : renderGeneralRoutes()}</Routes>
       </DefaultLayout>
     );
   }
@@ -98,8 +178,9 @@ const MainRouting = () => {
   // Routes for non-authenticated users
   return (
     <Routes>
-      <Route path="/" element={<SignIn />} />
+      <Route path="/" element={<><SignIn /> <PageTitle title="Sign In" /></>} />
       <Route path="/auth/signup" element={<SignUp />} />
+      <Route path="/auth/admin" element={<AdminLogin />} />
       <Route path="/auth/error" element={<Errorpage />} />
       <Route path="/auth/forgetpass" element={<Forgetpass />} />
     </Routes>

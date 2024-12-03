@@ -12,21 +12,14 @@ export const signup = (userData: {
 }) => {
   return axios.put('/student/signup', userData);
 };
-export const signin = (credentials: { username: string; password: string }) => {
-  return axios.post('/student/login', credentials);
-};
+
 export const signinTeacher = (credentials: {
   username: string;
   password: string;
 }) => {
   return axios.post('/teacher/login', credentials);
 };
-export const signinadmin = (credentials: {
-  username: string;
-  password: string;
-}) => {
-  return axios.post('/admin/login', credentials);
-};
+
 // export const updateadmin = (
 //   adminId: string,
 //   adminData: { username: string; password: string; },
@@ -674,217 +667,78 @@ export const shareProgressToSocial = (data:FormData) => {
   });
 }
 
-//blog API'S
-export const createBlog = (formData:FormData) => {
-  return axios.post('/blog/add', formData,{
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+//inventory system API's
+
+export const getRoles = () => {
+  return axios.get('/admin/getRoles');
 };
-export const getAllBlogs = () => {
-  return axios.get('/blog/');
+export const getUsers = () => {
+  return axios.get('/admin/getUsers');
 };
 
-export const getBlogById = (id:any) => {
-  return axios.get(`/blog/${id}`);
+export const addUser = (formData: any) => {
+  return axios.post('/admin/addUser', formData);
 };
 
-export const deleteBlog = (id:any) => {
-  return axios.delete(`/blog/${id}`);
+export const updateUser = (formData: any,id:any) => {
+  return axios.put(`/admin/updateUser/${id}`, formData);
 };
 
-//upload student dp
-export const uploadStudentProfileImage = (formData: FormData) => {
-  return axios.post('/student/upload-image', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+export const deleteUser = (id:any) => {
+  return axios.delete(`/admin/deleteUser/${id}`);
 };
 
-export const getStudentProfileImage = (studentId: string) => {
-  return axios.get(`/student/profileImage/${studentId}`);
-};
 
-export const submitSurvey = (surveyData: {
-  studentId: string;
-  classId: string;
-  teacherId: string;
-  classRating: number;
-  lessonRating: number;
-  teacherRating: number;
-  feedback?: string;
-}) => {
-  return axios.post('/survey/submit', surveyData);
-};
+//user sign in
 
-//survey dashboard API's 
-export const getStats = (teacherId: any) => {
-  return axios.get(`/survey/stats/${teacherId}`);
-};
-
-export const getDistribution = (teacherId: any) => {
-  return axios.get(`/survey/distribution/${teacherId}`);
-};
-export const getTrend = (teacherId: any) => {
-  return axios.get(`/survey/trend/${teacherId}`);
-};
-export const getSurveyFeedback = (teacherId: any,page:any,limit:any=10) => {
-  if(teacherId !==''){
-    return axios.get(`/survey/feedback/${teacherId}/${page}/${limit}`);
-  }else{
-    return axios.get(`/survey/feedback`);
-  }
-};
-
-export const getWeeklyContent = (courseDetailId: any) => {
-  return axios.get(`/weeklyContent/${courseDetailId}`);
-};
-
-export const uploadWeeklyContent = (formData: FormData) => {
-  return axios.post('/weeklyContent/upload', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
-};
-
-export const getUniqueCourses = () => {
-  return axios.get('/course/getUniqueCourses');
-};
-
-export const deleteWeeklyContent = (id:any) => {
-  return axios.delete(`/weeklyContent/${id}`);
-};
-
-export const submitAnnouncements = (obj:any) => {
-  return axios.post('/admin/announcement', obj);
-}
-
-export const getAllAnnouncements = () => {
-  return axios.get('/admin/getAllAnnouncements');
-}
-export const deleteannouncement = (announcementId:any) => {
-  return axios.delete(`/admin/deleteannouncement/${announcementId}`);
-};
-export const getAnnouncement = (obj:any) => {
-  return axios.post('/admin/getAnnouncements',obj);
-}
-
-export const submitRequest = (obj:any) => {
-  return axios.post('/support', obj);
-}
-
-
-export const getAllRequests = () => {
-  return axios.get('/support');
-}
-
-export const getRequestByUser = (userId:any,userType:any) => {
-  return axios.get(`/support/user/${userId}/${userType}`);
-}
-
-export const updateRequest = (id:any,obj:any) => {
-  return axios.put(`/support/${id}`,obj);
-}
-
-export const deleteRequest = (id:any) => {
-  return axios.delete(`/support/${id}`);
-};
-
-//update passwords
-export const updateStudentPassword = (obj:any) => {
-  return axios.post('/admin/changeStudentPassword', obj);
-}
-
-export const updateTeacherPassword = (obj:any) => {
-  return axios.post('/admin/changeTeacherPassword', obj);
-}
-
-export const updateAdminPassword = (obj:any) => {
-  return axios.post('/admin/changePassword', obj);
-}
-
-// export const getAdminsDetail = (adminId:any) => {
-//   alert('adminId:::'+adminId)
-//   return axios.get(`/admin/${adminId}`);
-// }
-
-export const getMessages = () => {
-  return axios.get(`/chat/messages`);
-}
-
-export const getPrivateMessages = (userId:any,userType:any) => {
-  return axios.get(`/chat/private-messages/${userId}/${userType}`);
-}
-
-export const getRecentChats = (userId:any,userType:any) => {
-  return axios.get(`/chat/recent-chats/${userId}/${userType}`);
-}
-
-export const getAdminDetailsByUsername = (obj:any) => {
-  return axios.post('/admin/getByUsername', obj);
-}
-
-//parent module
-
-export const addParent = (userData: {
-  address: string;
-  contact: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  password: string;
-  username: string;
-  studentId:any;
-}) => {
-  return axios.put('/parent/signup', userData);
-};
-
-export const getAllParents = () => {
-  return axios.get('/parent/getAll');
-};
-
-export const updateParent = (
-  parentId: string,
-  parentData: {
-    firstName: string;
-    lastName: string;
-    contact: string;
-    address: string;
-  },
-) => {
-  return axios.put(`/parent/update/${parentId}`, parentData);
-};
-
-export const updateParentPassword = (obj:any) => {
-  return axios.post('/admin/changeParentPassword', obj);
-}
-
-export const deleteParent = (parentId: string) => {
-  return axios.delete(`/parent/${parentId}`);
-};
-
-export const signinParent = (credentials: {
+export const signinadmin = (credentials: {
   username: string;
   password: string;
 }) => {
-  return axios.post('/parent/login', credentials);
+  return axios.post('/auth/login', credentials);
 };
 
-export const getParentById = (parentId:any) => {
-  return axios.get(`/parent/getById/${parentId}`);
+
+export const signin = (credentials: {
+  username: string;
+  password: string;
+}) => {
+  return axios.post('/auth/signin', credentials);
 };
 
-export const uploadParentProfileImage = (formData: FormData) => {
-  return axios.post('/parent/upload-image', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+//supplier and vendor API's
+export const createParty = (partyData:any) => {
+  return axios.post('/parties/parties', partyData);
 };
 
-export const getParentProfileImage = (parentId: string) => {
-  return axios.get(`/parent/profileImage/${parentId}`);
+export const getAllUsers = () => {
+  return axios.get('/parties/allUsers');
+};
+
+export const updateParty = (partyData:any,id:any) => {
+  return axios.put(`/parties/${id}`, partyData);
+};
+
+export const deleteParty = (id:any) => {
+  return axios.delete(`/parties/${id}`);
+};
+
+//stock management
+export const getLastItem = () => {
+  return axios.get('/items/last-item');
+};
+
+export const addItem = (itemData:any) => {
+  return axios.post('/items', itemData);
+};
+export const getAllItems = (page:number,limit:number=10) => {
+  return axios.get(`/items/${page}/${limit}`);
+};
+
+export const updateItem = (updateData:any,id:any) => {
+  return axios.put(`/items/${id}`, updateData);
+};
+
+export const deleteItem = (id:any) => {
+  return axios.delete(`/items/${id}`);
 };
