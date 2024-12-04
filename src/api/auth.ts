@@ -731,8 +731,9 @@ export const getLastItem = () => {
 export const addItem = (itemData:any) => {
   return axios.post('/items', itemData);
 };
-export const getAllItems = (page:number,limit:number=10) => {
-  return axios.get(`/items/${page}/${limit}`);
+export const getAllItems = (page:number,limit:number=10,search="") => {
+  debugger;
+  return axios.get(`/items/${page}/${limit}/${search}`);
 };
 
 export const updateItem = (updateData:any,id:any) => {
@@ -742,3 +743,13 @@ export const updateItem = (updateData:any,id:any) => {
 export const deleteItem = (id:any) => {
   return axios.delete(`/items/${id}`);
 };
+
+//quotations
+export const getLastInvoiceNo = () => {
+  return axios.get('/quotation/last-item');
+};
+
+export const createQuotation = (quotationData:any) => {
+  return axios.post('/quotation', quotationData);
+};
+

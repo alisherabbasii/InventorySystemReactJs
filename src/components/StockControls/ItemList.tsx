@@ -1,23 +1,22 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { getAllItems } from "../../api/auth";
 
-const ItemList = ({ onEdit }: any) => {
+const ItemList = ({ onEdit,searchQuerry }: any) => {
   const [items, setItems] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(searchQuerry ? searchQuerry : "");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
 
   // Fetch items from the API
-  const fetchItems = async (page = 1) => {
+  const fetchItems = async (page = 1,search="") => {
     setLoading(true);
     try {
-      const response = await getAllItems(page, 10);
+      const response = await getAllItems(page, 10,search);
       const { data, totalPages } = response.data;
       setItems(data);
       setTotalPages(totalPages);
-      setCurrentPage(page);
+      if (!search) {setCurrentPage(page);}
     } catch (error) {
       console.error("Error fetching items:", error);
     } finally {
@@ -27,18 +26,19 @@ const ItemList = ({ onEdit }: any) => {
 
   // Fetch items on component mount and page change
   useEffect(() => {
-    fetchItems(currentPage);
-  }, [currentPage]);
+    fetchItems(currentPage, searchQuery);
+  }, [currentPage, searchQuery]);
 
-  // Filter items based on search query
-  const filteredItems = items.filter(
-    (item:any) =>
-      item?.arabicDescription.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item?.englishDescription.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const handleSearch = (e:any) => {
+    const query = e.target.value;
+    setSearchQuery(query);
 
-  const handleSearch = (e: any) => {
-    setSearchQuery(e.target.value);
+    // Fetch all data for the search
+    if (query) {
+      fetchItems(1, query); // Fetch from first page for new search
+    } else {
+      fetchItems(1); // Reset to normal pagination if search is cleared
+    }
   };
 
   const handlePageChange = (newPage: any) => {
@@ -90,7 +90,7 @@ const ItemList = ({ onEdit }: any) => {
               </tr>
             </thead>
             <tbody>
-              {filteredItems.map((item: any, index) => (
+              {items.map((item: any, index) => (
                 <tr key={item.itemNo} className="text-center">
                   <td className="border border-gray-300 px-4 py-2">
                     {index + 1}
@@ -118,7 +118,7 @@ const ItemList = ({ onEdit }: any) => {
                       onClick={() => onEdit(item)}
                       className="bg-blue-500 text-white px-2 py-1 rounded"
                     >
-                      Edit
+                     {searchQuerry ? 'Select' :'Edit'  }
                     </button>
                   </td>
                 </tr>
@@ -127,6 +127,7 @@ const ItemList = ({ onEdit }: any) => {
           </table>
 
           {/* Pagination */}
+          {!searchQuery && (
           <div className="mt-4 flex justify-between items-center">
             <button
               onClick={() => handlePageChange(currentPage - 1)}
@@ -152,6 +153,7 @@ const ItemList = ({ onEdit }: any) => {
               Next
             </button>
           </div>
+          )}
         </>
       )}
     </div>
