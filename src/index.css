@@ -77,3 +77,13 @@ select{
 .formLabel{
     @apply text-black text-sm font-bold text-start
 }
+
+
+/* Inventory System */
+
+.label{
+    @apply block text-sm mb-1;
+}
+.input{
+    @apply border rounded px-2 py-1 w-full;
+}

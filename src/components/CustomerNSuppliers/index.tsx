@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { OpenModal } from "../Generic/OpenModal";
 import { ConfirmationDialog } from "../Generic/ConfirmationDialog";
 import CustomersTable from "./CustomersTables";
 import { toast, ToastContainer } from "react-toastify";
-import { createParty, deleteParty, updateParty } from "../../api/auth";
+import { createParty, deleteParty, getLatestPartyNo, updateParty } from "../../api/auth";
 
 export const CustomerNSuppliers = () => {
   // const [showModal, setShowModal] = useState(false);
@@ -19,6 +19,11 @@ export const CustomerNSuppliers = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [errors, setErrors] = useState({ customerNo: "", customerName: "" });
   const [customerId, setCustomerId] = useState("");
+
+  useEffect(()=>{
+    getLatestCustomerNo();
+  },[isSupplier]);
+
   const onHandleSave = async () => {
     if (!validateFields()) return;
     let obj = {
@@ -93,6 +98,7 @@ export const CustomerNSuppliers = () => {
     setIsSupplier(false);
     setCustomerId('');
     setIsEditMode(false);
+    getLatestCustomerNo();
   };
   const onHandleModify = () => {onHandleSave();};
   const onHandleDelete = () => {
@@ -159,6 +165,23 @@ export const CustomerNSuppliers = () => {
     }
   }
   const onHandleExit = () => {};
+
+  const getLatestCustomerNo = async () =>{
+    try {
+      const response:any = await getLatestPartyNo(isSupplier);
+    
+      if (response.data) {
+        debugger;
+        setCustomerNo(response.data.party_no);
+      }
+    } catch (error) {
+      console.error("error in getting latest customer no:", error);
+      toast.error("error in getting latest customer no", {
+      
+    })}
+  }
+
+
   return (
     <div className="p-8 bg-white rounded-lg shadow-lg">
       <ToastContainer />
@@ -175,7 +198,7 @@ export const CustomerNSuppliers = () => {
               htmlFor="customerno"
               className="block mb-1 text-sm font-medium text-gray-900 dark:text-white"
             >
-              Customer no
+               {isSupplier ? 'Supplier' :'Customer'} no
             </label>
             <input
               type="text"
@@ -186,6 +209,7 @@ export const CustomerNSuppliers = () => {
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-black"
               placeholder="12324354651"
               required
+              readOnly
             />
           </div>
           <div className="w-full">
@@ -193,7 +217,7 @@ export const CustomerNSuppliers = () => {
               htmlFor="customerno"
               className="block mb-1 text-sm font-medium text-gray-900 dark:text-white"
             >
-              Customer Name
+             {isSupplier ? 'Supplier' :'Customer'} Name
             </label>
             <input
               type="text"

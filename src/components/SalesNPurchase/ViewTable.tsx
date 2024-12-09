@@ -1,18 +1,20 @@
-import React, { useState, useEffect } from "react";
-import { getAllItems } from "../../api/auth";
+import  { useState, useEffect } from "react";
+import { getAllPurchaseInvoiceItems, getAllPurchaseReturnItems, getAllQItems, getAllSalesInvoiceItems, getAllSalesReturnItems } from "../../api/auth";
+import { formatDate } from "../Generic/FormatDate";
 
-const ItemList = ({ onEdit,searchQuerry }: any) => {
+const SalesNPurchaseTable = ({ onView,searchQuerry,from }: any) => {
   const [items, setItems] = useState([]);
   const [searchQuery, setSearchQuery] = useState(searchQuerry ? searchQuerry : "");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  // Fetch items from the API
-  const fetchItems = async (page = 1,search="") => {
+  // Fetch quotation items from the API
+  const fetchQItems = async (page = 1,search="") => {
     setLoading(true);
     try {
-      const response = await getAllItems(page, 10,search);
+      const response = await getAllQItems(page, 10,search);
+      console.log("quotation items:", response.data);
       const { data, totalPages } = response.data;
       setItems(data);
       setTotalPages(totalPages);
@@ -23,6 +25,83 @@ const ItemList = ({ onEdit,searchQuerry }: any) => {
       setLoading(false);
     }
   };
+//fetch sales invoice items
+  const fetchSalesInvoiceItems = async (page = 1,search="") => {
+    setLoading(true);
+    try {
+      const response = await getAllSalesInvoiceItems(page, 10,search);
+      console.log("sales invoice items:", response.data);
+      const { data, totalPages } = response.data;
+      setItems(data);
+      setTotalPages(totalPages);
+      if (!search) {setCurrentPage(page);}
+    } catch (error) {
+      console.error("Error fetching items:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchSalesReturnItems = async (page = 1,search="") => {
+    setLoading(true);
+    try {
+      const response = await getAllSalesReturnItems(page, 10,search);
+      console.log("sales return items:", response.data);
+      const { data, totalPages } = response.data;
+      setItems(data);
+      setTotalPages(totalPages);
+      if (!search) {setCurrentPage(page);}
+    } catch (error) {
+      console.error("Error fetching items:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchPurchaseInvoiceItems = async (page = 1,search="") => {
+    setLoading(true);
+    try {
+      const response = await getAllPurchaseInvoiceItems(page, 10,search);
+      console.log("purchase invoice items:", response.data);
+      const { data, totalPages } = response.data;
+      setItems(data);
+      setTotalPages(totalPages);
+      if (!search) {setCurrentPage(page);}
+    } catch (error) {
+      console.error("Error fetching items:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchPurchaseReturnItems = async (page = 1,search="") => {
+    setLoading(true);
+    try {
+      const response = await getAllPurchaseReturnItems(page, 10,search);
+      console.log("purchase return items:", response.data);
+      const { data, totalPages } = response.data;
+      setItems(data);
+      setTotalPages(totalPages);
+      if (!search) {setCurrentPage(page);}
+    } catch (error) {
+      console.error("Error fetching items:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const fetchItems = async (currentPage=1,search="") =>{
+    if(from === "quotation"){
+      fetchQItems(currentPage,search);
+    }else if(from === "salesInvoice"){
+      fetchSalesInvoiceItems(currentPage,search);
+    }else if(from === "purchaseInvoice"){
+      fetchPurchaseInvoiceItems(currentPage,search);
+    }else if(from === "salesReturn"){
+      fetchSalesReturnItems(currentPage,search);
+    }else if(from === "purchaseReturn"){
+      fetchPurchaseReturnItems(currentPage,search)
+    }
+  }
 
   // Fetch items on component mount and page change
   useEffect(() => {
@@ -49,7 +128,7 @@ const ItemList = ({ onEdit,searchQuerry }: any) => {
 
   return (
     <div className="px-4 overflow-y-auto h-96">
-      <h2 className="text-lg font-bold mb-4">Items</h2>
+      <h2 className="text-lg font-bold mb-4">Previous Quotations</h2>
 
       {/* Search Bar */}
       <div className="mb-4">
@@ -59,7 +138,6 @@ const ItemList = ({ onEdit,searchQuerry }: any) => {
           value={searchQuery}
           onChange={handleSearch}
           className="border rounded px-2 py-1 w-full"
-          autoFocus
         />
       </div>
 
@@ -73,19 +151,19 @@ const ItemList = ({ onEdit,searchQuerry }: any) => {
             <thead>
               <tr className="bg-gray-200">
                 <th className="border border-gray-300 px-4 py-2">#</th>
-                <th className="border border-gray-300 px-4 py-2">Item No</th>
+                <th className="border border-gray-300 px-4 py-2">Q.Invoice No</th>
                 <th className="border border-gray-300 px-4 py-2">
-                  Description
+                  Payment Terms
                 </th>
                 <th className="border border-gray-300 px-4 py-2">
-                  R. Quantity
+                  Total Amount
                 </th>
-                <th className="border border-gray-300 px-4 py-2">Cost Price</th>
+                <th className="border border-gray-300 px-4 py-2">Customer Name</th>
                 <th className="border border-gray-300 px-4 py-2">
-                  Retail Price
+                  Address
                 </th>
                 <th className="border border-gray-300 px-4 py-2">
-                  Wholesale Price
+                  Date
                 </th>
                 <th className="border border-gray-300 px-4 py-2">Actions</th>
               </tr>
@@ -97,29 +175,29 @@ const ItemList = ({ onEdit,searchQuerry }: any) => {
                     {index + 1}
                   </td>
                   <td className="border border-gray-300 px-4 py-2">
-                    {item.itemNo}
+                    {item.invoiceNo}
                   </td>
                   <td className="border border-gray-300 px-4 py-2">
-                    {item?.englishDescription} {"("} {item?.arabicDescription} {")"}
+                    {item?.paymentTerms}
                   </td>
                   <td className="border border-gray-300 px-4 py-2">
-                    {item.reservedQuantity}
+                    {item.totalAmount}
                   </td>
                   <td className="border border-gray-300 px-4 py-2">
-                    {item.costPrice}
+                    {item?.Party?.name}
                   </td>
                   <td className="border border-gray-300 px-4 py-2">
-                    {item.retailPrice}
+                    {item?.Party?.address}
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">
-                    {item.wholesalePrice}
-                  </td>
+                    <td>
+                    {formatDate(item.date)}
+                    </td>
                   <td className="border border-gray-300 px-4 py-2">
                     <button
-                      onClick={() => onEdit(item)}
+                      onClick={() => onView(item)}
                       className="bg-blue-500 text-white px-2 py-1 rounded"
                     >
-                     {searchQuerry ? 'Select' :'Edit'  }
+                     View
                     </button>
                   </td>
                 </tr>
@@ -161,4 +239,4 @@ const ItemList = ({ onEdit,searchQuerry }: any) => {
   );
 };
 
-export default ItemList;
+export default SalesNPurchaseTable;

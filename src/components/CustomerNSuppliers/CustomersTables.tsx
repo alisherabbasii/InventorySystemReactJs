@@ -3,6 +3,7 @@ import { getAllUsers } from "../../api/auth";
 import { formatDate } from "../Generic/FormatDate";
 
 const CustomersTable = (props: any) => {
+  const {onlyShowSuppliers,onlyShowVendors} = props;
   const [customers, setCustomers] = useState([]);
   const [customerNo, setCustomerNo] = useState("");
   const [customerName, setCustomerName] = useState("");
@@ -19,8 +20,21 @@ const CustomersTable = (props: any) => {
     try {
       const response = await getAllUsers();
       if (response.data) {
-        setCustomers(response.data);
-        setAllCustomers(response.data);
+        //type (supplier,vendor)
+        console.log("users areee:::::",response.data);
+        if(onlyShowSuppliers){ 
+          const filteredUsers = response.data.filter((user: any) => user.type === "supplier");
+          setCustomers(filteredUsers);
+          setAllCustomers(filteredUsers);
+        }else if(onlyShowVendors){
+          const filteredUsers = response.data.filter((user: any) => user.type === "vendor");
+          setCustomers(filteredUsers);
+          setAllCustomers(filteredUsers);
+        }else{
+          setCustomers(response.data);
+          setAllCustomers(response.data);
+        }
+       
       }
     } catch (error) {
       console.error("error in fetching party:", error);
@@ -117,6 +131,7 @@ const CustomersTable = (props: any) => {
               <th className="border-r border-[#c1c5cd] px-4 py-2">
                 Customer Name
               </th>
+              <th className="border-r border-[#c1c5cd] px-4 py-2">Type</th>
               <th className="border-r border-[#c1c5cd] px-4 py-2">Balance</th>
               <th className="border-r border-[#c1c5cd] px-4 py-2">Address</th>
               <th className="border-r border-[#c1c5cd] px-4 py-2">Phone No</th>
@@ -137,6 +152,9 @@ const CustomersTable = (props: any) => {
                   </td>
                   <td className="border-b border-[#EAECF0] px-4 py-2">
                     {customer.name}
+                  </td>
+                  <td className="border-b border-[#EAECF0] px-4 py-2">
+                    {customer?.type}
                   </td>
                   <td className="border-b border-[#EAECF0] px-4 py-2">
                     {customer.balance}
