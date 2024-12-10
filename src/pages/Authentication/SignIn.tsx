@@ -55,14 +55,20 @@ export default function SignIn() {
   return (
     <>
       <ToastContainer />
-
-      <div className="flex items-center flex-col-reverse md:flex-row-reverse lg:flex-row-reverse text-stone-800 justify-evenly bg-slate-200 h-screen ">
+   
+     
+      <div className="flex items-center flex-col-reverse md:flex-row-reverse lg:flex-row-reverse text-stone-800 justify-evenly bg-slate-200 h-screen">
         <div>
-          <div className='globalCardStyle p-8'>
+        
+          <div className='globalCardStyle p-8 px-12'>
+          {/* <div className='' style={{display:'flex',alignItems:'center',justifyContent:'center',width:'auto',marginBottom:'3rem'}}>
+        <img className='rounded-full align-center' src="../../src/images/signin/inventorylogo.jpeg" height={300} width={300}  alt="" />
+        </div> */}
             <div>
             {/* <h2 className="mt-6 text-center text-xl font-bold">
                 Inventory Management System
               </h2> */}
+              
               <h2 className="mt-2 text-center text-3xl font-bold">
                 Sign in to your account
               </h2>

@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import DefaultLayout from "../layout/DefaultLayout";
 import Errorpage from "../pages/Authentication/Errorpage";
 import Forgetpass from "../pages/Authentication/Forgetpass";
-import SignUp from "../pages/Authentication/SignUp";
+// import SignUp from "../pages/Authentication/SignUp";
 import SignIn from "../pages/Authentication/SignIn";
 import PageTitle from "../components/PageTitle";
 import { CustomerNSuppliers } from "../components/CustomerNSuppliers";
@@ -96,7 +96,7 @@ const renderAdminRoutes = () => (
       }
     />
 
-    <Route
+    {/* <Route
       path="/customerAndSuppliers"
       element={
         <>
@@ -144,7 +144,7 @@ const renderAdminRoutes = () => (
           <GeneralAccounts />
         </>
       }
-    />
+    /> */}
 
   <Route
       path="/exit"
@@ -155,7 +155,7 @@ const renderAdminRoutes = () => (
         </>
       }
     />
-    <Route path="*" element={<Navigate to="/customerAndSuppliers" replace />} />
+    <Route path="*" element={<Navigate to="/addUser" replace />} />
   </>
 );
 
@@ -179,7 +179,7 @@ const MainRouting = () => {
   return (
     <Routes>
       <Route path="/" element={<><SignIn /> <PageTitle title="Sign In" /></>} />
-      <Route path="/auth/signup" element={<SignUp />} />
+      {/* <Route path="/auth/signup" element={<SignUp />} /> */}
       <Route path="/auth/admin" element={<AdminLogin />} />
       <Route path="/auth/error" element={<Errorpage />} />
       <Route path="/auth/forgetpass" element={<Forgetpass />} />

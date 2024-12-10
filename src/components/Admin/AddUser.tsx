@@ -15,7 +15,11 @@ const AdminManagement = () => {
     const fetchAdmins = async () => {
         try {
             const response = await getUsers();
-            setAdmins(response.data.users);
+            if(response.data){
+                debugger;
+                setAdmins(response.data.users);
+            }
+            
           } catch (error) {
             console.error('error:', error);
         
@@ -157,17 +161,19 @@ const AdminManagement = () => {
                         <tr key={admin.id}>
                             <td className="border border-gray-300 p-2">{admin.name}</td>
                             <td className="border border-gray-300 p-2">{admin.username}</td>
-                            <td className="border border-gray-300 p-2">{admin.Role.role}</td>
+                            <td className="border border-gray-300 p-2">{admin?.Role?.role}</td>
                             <td className="border border-gray-300 p-2 space-x-2">
                                 <button
                                     onClick={() => handleEdit(admin)}
                                     className="bg-yellow-500 text-white px-3 py-1 rounded"
+                                    disabled={admin?.username=='admin'}
                                 >
                                     Edit
                                 </button>
                                 <button
                                     onClick={()=>{setAdminId(admin.id);setShowConfirmation(true)}}
                                     className="bg-red-500 text-white px-3 py-1 rounded"
+                                    disabled={admin?.username=='admin'}
                                 >
                                     Delete
                                 </button>
