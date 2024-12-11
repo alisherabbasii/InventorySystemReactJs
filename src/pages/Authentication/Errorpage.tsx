@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import error from "../../images/logo/error.svg";
 
 export default function Errorpage() {
     return (
@@ -26,7 +25,7 @@ export default function Errorpage() {
         </div>
       </div>
 
-      <img className=" mt-8 w-5/12 " src={error} alt="error" />
+      <img className=" mt-8 w-5/12 " src={"error"} alt="error" />
     </div>
     );
 }

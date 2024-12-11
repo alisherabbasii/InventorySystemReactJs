@@ -4,6 +4,7 @@ import CustomersTable from "../CustomerNSuppliers/CustomersTables";
 import { createPaymentVoucher, createReceiptVoucher, getPaymentReceiptWithAccount } from "../../api/auth";
 import { toast, ToastContainer } from "react-toastify";
 import { useReactToPrint } from "react-to-print";
+import { DeleteIcon, ModifyIcon, PrintIcon } from "../Icons/AllButtonIcons";
 
 export const PaymentVoucher = () => {
   const [selectedPaymentType, setSelectedPaymentType] = useState("bank");
@@ -288,11 +289,7 @@ export const PaymentVoucher = () => {
             type="button"
             className="text-black border border-blue-600 bg-white hover:bg-sky-400 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center dark:focus:ring-[#3b5998]/55 me-2 "
           >
-            <img
-              src="../../src/images/customersAndSuppliers/print.png"
-              alt=""
-              className="me-2 w-6 h-6"
-            />
+            <PrintIcon />
             Print
           </button>
 
@@ -303,11 +300,7 @@ export const PaymentVoucher = () => {
             type="button"
             className="text-black border border-blue-600 hover:bg-sky-400 hover:text-white bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center dark:focus:ring-[#3b5998]/55 me-2 "
           >
-            <img
-              src="../../src/images/customersAndSuppliers/modify.png"
-              alt=""
-              className="me-2 w-6 h-6"
-            />
+            <ModifyIcon />
             Save
           </button>
 
@@ -318,11 +311,7 @@ export const PaymentVoucher = () => {
             type="button"
             className="text-black border border-blue-600 hover:bg-sky-400 hover:text-white bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center dark:focus:ring-[#3b5998]/55 me-2 "
           >
-            <img
-              src="../../src/images/customersAndSuppliers/delete.png"
-              alt=""
-              className="me-2 w-6 h-6"
-            />
+            <DeleteIcon />
             Cancel
           </button>
         </div>

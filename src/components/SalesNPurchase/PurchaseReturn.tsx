@@ -3,12 +3,15 @@ import { OpenModal } from "../Generic/OpenModal";
 import SalesNPurchaseTable from "./ViewTable";
 import CustomersTable from "../CustomerNSuppliers/CustomersTables";
 import ItemList from "../StockControls/ItemList";
-import { DeleteIcon } from "lucide-react";
+import { DeleteIcon as DeleteLIcon } from "lucide-react";
 import { combineDescription, getArabicDescription, getBasicUnit, getEnglishDescription, getItemNo, getTotalPrice, getUnitPrice } from "./helperFunctions";
 import { toast, ToastContainer } from "react-toastify";
 import { useReactToPrint } from "react-to-print";
 import { createPurchaseInvoice, createPurchaseReturn, getLastPINo, getLastPRNo, updatePurchaseInvoice, updatePurchaseReturn } from "../../api/auth";
 import { formatDateForInput } from "../Generic/FormatDate";
+import { PurchasingRIcon } from "../Icons/AllSNPIcons";
+import { DeleteIcon, ModifyIcon, PrintIcon, ViewIcon } from "../Icons/AllButtonIcons";
+import { getBasicUnitOptions } from "../Generic/GetBasicUnitOptions";
 
 
 export const PurchaseReturn = (props:any) => {
@@ -27,9 +30,17 @@ export const PurchaseReturn = (props:any) => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [purchaseInvoiceId, setPurchaseInvoiceId] = useState("");
   const [description, setDescription] = useState("");
+  const [showEngDesc,setShowEngDesc] = useState(true);
+
 
   const contentRef = useRef<HTMLDivElement>(null);
-  const reactToPrintFn = useReactToPrint({ contentRef });
+  const reactToPrintFn = useReactToPrint({ contentRef,pageStyle: `
+    @media print {
+      [data-printable="false"] {
+        display: none !important;
+      }
+    }
+  ` });
 
   const handleSearchProduct = (e: any) => {
     if (e.target.value) {
@@ -149,19 +160,31 @@ export const PurchaseReturn = (props:any) => {
   // Calculate the total for all items
   const grandTotal = items.reduce(
     (sum: any, item: any) =>
-      sum +
-      item.quantity * (item?.Item?.retailPrice || item?.retailPrice || 0),
+      sum + item.quantity * (item?.retailPrice || item?.retailPrice || 0),
     0
   );
+  const handleBasicUnitChange = (index: number, value: string) => {
+    setItems((prevItems: any) =>
+      prevItems.map((item: any, i: any) =>
+        i === index ? { ...item, basicUnit: value } : item
+      )
+    );
+  };
 
-
+  const handleUnitPriceChange = (index: number, value: string) => {
+    setItems((prevItems: any) =>
+      prevItems.map((item: any, i: any) =>
+        i === index ? { ...item, retailPrice: parseInt(value) || 0 } : item
+      )
+    );
+  };
   return (
     <div>
       <ToastContainer />
       {/* Form */}
       <div ref={contentRef}>
-        <div className="flex justify-between items-center gap-6 mb-6">
-          <div className="w-8/12 grid grid-cols-2 gap-6  p-6  ">
+        <div className="flex justify-between items-center  mb-6">
+          <div className="min-w-96 grid grid-cols-3 gap-6  p-6  ">
             <div>
               <label className="block font-bold mb-2">Invoice No</label>
               <input
@@ -207,6 +230,8 @@ export const PurchaseReturn = (props:any) => {
               >
                 <option value="credit">Credit</option>
                 <option value="cash">Cash</option>
+                <option value="cheque">Cheque</option>
+
               </select>
             </div>
             <div>
@@ -232,11 +257,7 @@ export const PurchaseReturn = (props:any) => {
             </div>
           </div>
           <div>
-            <img
-              src="../../src/images/sales/preturn.png"
-              alt="Image"
-              className=""
-            />
+            <PurchasingRIcon />
           </div>
         </div>
 
@@ -265,23 +286,34 @@ export const PurchaseReturn = (props:any) => {
                   <td className="border border-gray-300 px-4 py-2">
                   {getItemNo(item)}
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">
-                  {combineDescription(
-                      getEnglishDescription(item),
-                      getArabicDescription(item)
-                    )}
+                  <td className="border border-gray-300 px-4 py-2" onClick={()=>{setShowEngDesc(!showEngDesc)}}>
+                  {showEngDesc ? getEnglishDescription(item) :getArabicDescription(item) }
+
                   </td>
                   {/* <td className="border border-gray-300 px-4 py-2">
                   {item.store}
                 </td> */}
                   <td className="border border-gray-300 px-4 py-2">
-                  {getBasicUnit(item)}
+                  {/* {getBasicUnit(item)} */}
+                  <select
+                      value={item?.basicUnit} // Ensure this returns the `value`, not `label`
+                      onChange={(e) =>
+                        handleBasicUnitChange(index, e.target.value)
+                      }
+                      className="appearance-none px-2 py-1 w-full"
+                    >
+                      {getBasicUnitOptions(item).map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td className="border border-gray-300 px-4 py-2 w-28">
                     <input
                       type="number"
                       min="1"
-                      value={item.quantity || 0}
+                      value={item.quantity > 0 ? item.quantity : ""}
                       onChange={(e) =>
                         handleQuantityChange(index, e.target.value)
                       }
@@ -289,28 +321,37 @@ export const PurchaseReturn = (props:any) => {
                     />
                   </td>
                   {/* Unit price(dont confuse with retailPrice it's same) */}
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td className="border border-gray-300 px-4 py-2 w-28">
                     {/* {isEditMode ? item?.Item?.retailPrice : item.retailPrice} */}
-                    {getUnitPrice(item)}
+                    {/* {getUnitPrice(item)} */}
+                    <input
+                      type="number"
+                      min="1"
+                      value={getUnitPrice(item)}
+                      onChange={(e) =>
+                        handleUnitPriceChange(index, e.target.value)
+                      }
+                      className="border border-gray-300 rounded px-2 py-1 w-full"
+                    />
                   </td>
 
                   <td className="border border-gray-300 px-4 py-2">
                   {getTotalPrice(item, isEditMode)}
                   </td>
-                  <td>
+                  <td data-printable="false">
                     <button
                       onClick={() => {
                         onRemoveItem(item);
                       }}
                     >
-                      <DeleteIcon color="red" />
+                      <DeleteLIcon color="red" />
                     </button>
                   </td>
                 </tr>
               ))}
 
               <tr>
-                <td colSpan={8}>
+                <td colSpan={8} data-printable="false">
                   <input
                     className="w-full border border-gray-300 px-4 py-2 "
                     type="text"
@@ -332,7 +373,7 @@ export const PurchaseReturn = (props:any) => {
               <input
                 type="text"
                 value={grandTotal ? grandTotal.toFixed(2) : 0}
-                className="w-32 text-white rounded px-2 py-1 bg-sky-400"
+                className="w-32 font-bold text-white rounded px-2 py-1 bg-sky-400"
                 readOnly
               />
             </div>
@@ -348,11 +389,7 @@ export const PurchaseReturn = (props:any) => {
           type="button"
           className="text-black border border-blue-600 bg-white hover:bg-sky-400 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center dark:focus:ring-[#3b5998]/55 me-2 "
         >
-          <img
-            src="../../src/images/customersAndSuppliers/print.png"
-            alt=""
-            className="me-2 w-6 h-6"
-          />
+          <PrintIcon />
           Print
         </button>
 
@@ -363,11 +400,7 @@ export const PurchaseReturn = (props:any) => {
           type="button"
           className="text-black border border-blue-600 hover:bg-sky-400 hover:text-white bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center dark:focus:ring-[#3b5998]/55 me-2 "
         >
-          <img
-            src="../../src/images/customersAndSuppliers/modify.png"
-            alt=""
-            className="me-2 w-6 h-6"
-          />
+          <ModifyIcon />
           {isEditMode ? "Update" : "Save"}
         </button>
 
@@ -376,11 +409,7 @@ export const PurchaseReturn = (props:any) => {
           type="button"
           className="text-black border border-blue-600 hover:bg-sky-400 hover:text-white bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center dark:focus:ring-[#3b5998]/55 me-2 "
         >
-          <img
-            src="../../src/images/customersAndSuppliers/delete.png"
-            alt=""
-            className="me-2 w-6 h-6"
-          />
+          <DeleteIcon />
           Cancel
         </button>
 
@@ -392,11 +421,7 @@ export const PurchaseReturn = (props:any) => {
           type="button"
           className="text-black border border-blue-600 hover:bg-sky-400 hover:text-white bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center dark:focus:ring-[#3b5998]/55 me-2 "
         >
-          <img
-            src="../../src/images/customersAndSuppliers/view.png"
-            alt=""
-            className="me-2 w-6 h-6"
-          />
+          <ViewIcon />
           View
         </button>
       </div>

@@ -1,9 +1,16 @@
 import { useEffect, useState } from "react";
-import { addItem, deleteItem, getLastItem, updateItem } from "../../api/auth";
+import { addItem, addItemFromExcel, deleteItem, getLastItem, updateItem } from "../../api/auth";
 import { toast, ToastContainer } from "react-toastify";
 import { OpenModal } from "../Generic/OpenModal";
 import ItemList from "./ItemList";
 import { ConfirmationDialog } from "../Generic/ConfirmationDialog";
+import {
+  DeleteIcon,
+  ModifyIcon,
+  SaveIcon,
+  ViewIcon,
+} from "../Icons/AllButtonIcons";
+import { getBasicUnitOptions } from "../Generic/GetBasicUnitOptions";
 
 export const Form = () => {
   const [formData, setFormData] = useState({
@@ -18,12 +25,17 @@ export const Form = () => {
     orderedQuantity: "",
     reservedQuantity: "",
     averageCost: 0,
+    itemCode: "",
   });
   const [itemNo, setItemNo] = useState("");
   const [openViewModal, setOpenViewModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [itemId, setItemId] = useState("");
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [file, setFile] = useState(null);
+  const [uploadStatus, setUploadStatus] = useState('');
+  const [showExcelForm, setShowExcelForm] = useState(false);
+
 
 
   useEffect(() => {
@@ -53,24 +65,24 @@ export const Form = () => {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     console.log("Form submitted:", formData);
-    if(!isEditMode){
-    try {
-      const response = await addItem(formData);
-      if (response.data) {
-        toast.success("Item added successfully");
-        clearFields();
-        getItemNo();
-      } else if (response.status == 400) {
-        toast.info("please fill out all the fields");
+    if (!isEditMode) {
+      try {
+        const response = await addItem(formData);
+        if (response.data) {
+          toast.success("Item added successfully");
+          clearFields();
+          getItemNo();
+        } else if (response.status == 400) {
+          toast.info("please fill out all the fields");
+        }
+      } catch (error: any) {
+        if (error?.response?.status == 404) {
+          toast.info("please fill out all required fields");
+        }
+        console.error("error in adding party:", error);
+        toast.error("Error adding item");
       }
-    } catch (error:any) {
-      if(error?.response?.status==404){
-        toast.info("please fill out all required fields");
-      }
-      console.error("error in adding party:", error);
-      toast.error("Error adding item");
     }
-  }
   };
   const clearFields = () => {
     setFormData({
@@ -85,41 +97,40 @@ export const Form = () => {
       orderedQuantity: "",
       reservedQuantity: "",
       averageCost: 0,
+      itemCode: "",
     });
-    setItemId('');
+    setItemId("");
   };
 
   function onHandleDelete() {
     setOpenDeleteModal(true);
   }
 
-  const onHandleModify = async() => {
-   
-      //handle modify
-      try {
-        const response = await updateItem(formData,itemId);
-        if (response.data) {
-          toast.success("Item updated successfully");
-          clearFields();
-        } else if (response.status == 400) {
-          toast.info("please fill out all the fields");
-        }
-      } catch (error) {
-        console.error("error in update item:", error);
-        toast.error("Error updating item");
+  const onHandleModify = async () => {
+    //handle modify
+    try {
+      const response = await updateItem(formData, itemId);
+      if (response.data) {
+        toast.success("Item updated successfully");
+        clearFields();
+      } else if (response.status == 400) {
+        toast.info("please fill out all the fields");
       }
-
-  }
+    } catch (error) {
+      console.error("error in update item:", error);
+      toast.error("Error updating item");
+    }
+  };
   const onHandleEdit = (item: any) => {
     setItemId(item.id);
     setFormData(item);
   };
 
-  const onDeleteRecord = async() =>{
+  const onDeleteRecord = async () => {
     try {
       const response = await deleteItem(itemId);
       debugger;
-      if (response.status==204) {
+      if (response.status == 204) {
         toast.success("Data deleted successfully", {
           position: "top-right",
           autoClose: 3000,
@@ -142,17 +153,69 @@ export const Form = () => {
         draggable: true,
       });
     }
-  }
+  };
 
+  const handleFileChange = (e:any) => {
+    setFile(e.target.files[0]);
+  };
 
+  const handleUpload = async (e:any) => {
+    e.preventDefault();
+
+    if (!file) {
+      setUploadStatus('Please select a file.');
+      return;
+    }
+
+    const formDataa = new FormData();
+    formDataa.append('file', file); 
+
+    try {
+      const response = await addItemFromExcel(formDataa);
+      debugger;
+      if (response.data) {
+        setUploadStatus('Products imported successfully');
+        toast.success("Items uploaded successfully");
+        clearFields();
+      } else if (response.status == 400) {
+        toast.info("please fill out all the fields");
+      }
+    } catch (error) {
+      setUploadStatus('Failed to import products');
+      console.error('Error:', error);
+      toast.error("Error updating item");
+    }
+  };
 
   return (
     <div>
       <ToastContainer />
+{showExcelForm && 
+      <div className="container mx-auto p-4">
+      <h2 className="text-2xl font-bold mb-4">Import Products via Excel</h2>
+      
+        <input
+          type="file"
+          accept=".xlsx, .xls"
+          onChange={handleFileChange}
+          className="mb-4"
+        />
+        <button
+          type="button"
+          onClick={handleUpload}
+          className="bg-blue-500 text-white py-2 px-4 rounded"
+        >
+          Upload
+        </button>
+      {uploadStatus && <p className="mt-4">{uploadStatus}</p>}
+    </div>
+    }
       <form onSubmit={handleSubmit} className="mt-6">
+        <div className="flex justify-between">  
         <h2 className="text-xl font-semibold mb-6">Add Item</h2>
-
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <button type="button" className="bg-indigo-500 text-sm h-8 text-white px-2 rounded" onClick={()=>{setShowExcelForm(!showExcelForm)}}>Import from Excel</button>
+        </div>
+        <div className="grid grid-cols-3 gap-4 mb-4">
           <div>
             <label className="block text-sm mb-1">Item No</label>
             <input
@@ -161,6 +224,18 @@ export const Form = () => {
               value={itemNo}
               disabled
               className="border rounded px-2 py-1 w-full"
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Item Code</label>
+            <input
+              type="text"
+              name="itemCode"
+              value={formData.itemCode}
+              onChange={handleInputChange}
+              className="border rounded px-2 py-1 w-full"
+              placeholder="Enter item code"
+              required
             />
           </div>
           <div>
@@ -177,7 +252,7 @@ export const Form = () => {
           </div>
         </div>
 
-        <div className="space-y-4 mb-6">
+        <div className="grid grid-cols-3 gap-4 mb-6">
           <div>
             <label className="block text-sm mb-1">Arabic Description </label>
             <input
@@ -222,9 +297,14 @@ export const Form = () => {
                   className="border rounded px-2 py-1 w-full appearance-none bg-white"
                   required
                 >
-                  <option value="box">Box</option>
+                  {/* <option value="box">Box</option>
                   <option value="piece">Piece</option>
-                  <option value="role">Role</option>
+                  <option value="role">Role</option> */}
+                  {getBasicUnitOptions().map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
@@ -315,11 +395,7 @@ export const Form = () => {
             }
             disabled={isEditMode}
           >
-            <img
-              src="../../src/images/customersAndSuppliers/save.png"
-              alt=""
-              className="me-2 w-6 h-6"
-            />
+            <SaveIcon />
             Save
           </button>
 
@@ -335,11 +411,7 @@ export const Form = () => {
             }
             disabled={!isEditMode}
           >
-            <img
-              src="../../src/images/customersAndSuppliers/modify.png"
-              alt=""
-              className="me-2 w-6 h-6"
-            />
+            <ModifyIcon />
             Modify
           </button>
 
@@ -355,12 +427,8 @@ export const Form = () => {
             }
             disabled={!isEditMode}
           >
-            <img
-              src="../../src/images/customersAndSuppliers/delete.png"
-              alt=""
-              className="me-2 w-6 h-6"
-            />
-            Cancel
+            <DeleteIcon />
+            Delete
           </button>
 
           <button
@@ -372,11 +440,7 @@ export const Form = () => {
             type="button"
             className="text-black border border-blue-600 hover:bg-sky-400 hover:text-white bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center dark:focus:ring-[#3b5998]/55 me-2 "
           >
-            <img
-              src="../../src/images/customersAndSuppliers/view.png"
-              alt=""
-              className="me-2 w-6 h-6"
-            />
+            <ViewIcon />
             View
           </button>
         </div>
@@ -390,10 +454,11 @@ export const Form = () => {
           closeDialog={() => {
             setOpenDeleteModal(false);
           }}
-          handleConfirm={() => { onDeleteRecord()}}
+          handleConfirm={() => {
+            onDeleteRecord();
+          }}
         />
       )}
-      
 
       {openViewModal && (
         <OpenModal

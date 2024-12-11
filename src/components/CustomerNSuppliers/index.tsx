@@ -3,14 +3,21 @@ import { OpenModal } from "../Generic/OpenModal";
 import { ConfirmationDialog } from "../Generic/ConfirmationDialog";
 import CustomersTable from "./CustomersTables";
 import { toast, ToastContainer } from "react-toastify";
-import { createParty, deleteParty, getLatestPartyNo, updateParty } from "../../api/auth";
+import {
+  createParty,
+  deleteParty,
+  getLatestPartyNo,
+  updateParty,
+} from "../../api/auth";
+import Exit  from "../../src/images/customersAndSuppliers/exit.png";
+import { DeleteIcon, ExitIcon, ModifyIcon, SaveIcon, ViewIcon } from "../Icons/AllButtonIcons";
 
 export const CustomerNSuppliers = () => {
   // const [showModal, setShowModal] = useState(false);
   const [customerNo, setCustomerNo] = useState("");
   const [accountNo, setAccountNo] = useState("");
   const [customerName, setCustomerName] = useState("");
-  const [taxNo, setTaxNo] = useState("");
+  const [shopName, setShopName] = useState("");
   const [commercialRecord, setCommercialRecord] = useState("");
   const [address, setAddress] = useState("");
   const [isSupplier, setIsSupplier] = useState(false);
@@ -20,22 +27,22 @@ export const CustomerNSuppliers = () => {
   const [errors, setErrors] = useState({ customerNo: "", customerName: "" });
   const [customerId, setCustomerId] = useState("");
 
-  useEffect(()=>{
+  useEffect(() => {
     getLatestCustomerNo();
-  },[isSupplier]);
+  }, [isSupplier]);
 
   const onHandleSave = async () => {
     if (!validateFields()) return;
     let obj = {
       party_no: customerNo,
       name: customerName,
-      tax_number: taxNo,
+      tax_number: shopName,
       commercial_record: commercialRecord,
       address,
       type: isSupplier ? "supplier" : "vendor",
     };
     console.log(obj);
-    if(!isEditMode){
+    if (!isEditMode) {
       try {
         const response = await createParty(obj);
         if (response.data) {
@@ -60,9 +67,9 @@ export const CustomerNSuppliers = () => {
           draggable: true,
         });
       }
-    }else{
+    } else {
       try {
-        const response = await updateParty(obj,customerId);
+        const response = await updateParty(obj, customerId);
         if (response.data) {
           toast.success("Data updated successfully", {
             position: "top-right",
@@ -86,21 +93,22 @@ export const CustomerNSuppliers = () => {
         });
       }
     }
- 
   };
 
   const clearFields = () => {
     setCustomerNo("");
     setCustomerName("");
-    setTaxNo("");
+    setShopName("");
     setCommercialRecord("");
     setAddress("");
     setIsSupplier(false);
-    setCustomerId('');
+    setCustomerId("");
     setIsEditMode(false);
     getLatestCustomerNo();
   };
-  const onHandleModify = () => {onHandleSave();};
+  const onHandleModify = () => {
+    onHandleSave();
+  };
   const onHandleDelete = () => {
     setOpenDeleteModal(true);
   };
@@ -112,13 +120,12 @@ export const CustomerNSuppliers = () => {
   const onHandleEdit = (customer: any) => {
     setCustomerNo(customer.party_no);
     setCustomerName(customer.name);
-    setTaxNo(customer.tax_number);
+    setShopName(customer.tax_number);
     setCommercialRecord(customer.commercial_record);
     setAddress(customer.address);
     setIsSupplier(customer.type === "supplier" ? true : false);
     setCustomerId(customer.id);
-
-  }; 
+  };
 
   const validateFields = () => {
     let isValid = true;
@@ -137,10 +144,10 @@ export const CustomerNSuppliers = () => {
     return isValid;
   };
 
-  const onDeleteRecord = async() =>{
+  const onDeleteRecord = async () => {
     try {
       const response = await deleteParty(customerId);
-      if (response.status==204) {
+      if (response.status == 204) {
         toast.success("Data deleted successfully", {
           position: "top-right",
           autoClose: 3000,
@@ -163,24 +170,22 @@ export const CustomerNSuppliers = () => {
         draggable: true,
       });
     }
-  }
+  };
   const onHandleExit = () => {};
 
-  const getLatestCustomerNo = async () =>{
+  const getLatestCustomerNo = async () => {
     try {
-      const response:any = await getLatestPartyNo(isSupplier);
-    
+      const response: any = await getLatestPartyNo(isSupplier);
+
       if (response.data) {
         debugger;
         setCustomerNo(response.data.party_no);
       }
     } catch (error) {
       console.error("error in getting latest customer no:", error);
-      toast.error("error in getting latest customer no", {
-      
-    })}
-  }
-
+      toast.error("error in getting latest customer no", {});
+    }
+  };
 
   return (
     <div className="p-8 bg-white rounded-lg shadow-lg">
@@ -198,7 +203,7 @@ export const CustomerNSuppliers = () => {
               htmlFor="customerno"
               className="block mb-1 text-sm font-medium text-gray-900 dark:text-white"
             >
-               {isSupplier ? 'Supplier' :'Customer'} no
+              {isSupplier ? "Supplier" : "Customer"} no
             </label>
             <input
               type="text"
@@ -217,7 +222,7 @@ export const CustomerNSuppliers = () => {
               htmlFor="customerno"
               className="block mb-1 text-sm font-medium text-gray-900 dark:text-white"
             >
-             {isSupplier ? 'Supplier' :'Customer'} Name
+              {isSupplier ? "Supplier" : "Customer"} Name
             </label>
             <input
               type="text"
@@ -258,16 +263,16 @@ export const CustomerNSuppliers = () => {
             htmlFor="customerno"
             className="block mb-1 text-sm font-medium text-gray-900 dark:text-white"
           >
-            Tax Number
+            Shop name
           </label>
           <input
             type="text"
-            name="taxNo"
-            id="taxNo"
-            value={taxNo}
-            onChange={(e) => setTaxNo(e.target.value)}
+            name="shopName"
+            id="shopName"
+            value={shopName}
+            onChange={(e) => setShopName(e.target.value)}
             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-black"
-            placeholder="Enter tax number"
+            placeholder="Enter shop name"
             required
           />
         </div>
@@ -337,11 +342,7 @@ export const CustomerNSuppliers = () => {
             type="button"
             className="text-black border border-blue-600 bg-white hover:bg-sky-400 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center dark:focus:ring-[#3b5998]/55 me-2 "
           >
-            <img
-              src="../../src/images/customersAndSuppliers/save.png"
-              alt=""
-              className="me-2 w-6 h-6"
-            />
+           <SaveIcon />
             Save
           </button>
 
@@ -350,14 +351,14 @@ export const CustomerNSuppliers = () => {
               onHandleModify();
             }}
             type="button"
-            className={ !isEditMode ?'text-black border border-blue-600 cursor-no-drop hover:bg-zinc-400 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center  me-2' : "text-black border border-blue-600 hover:bg-sky-400 hover:text-white bg-white  focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center dark:focus:ring-[#3b5998]/55 me-2 " }
+            className={
+              !isEditMode
+                ? "text-black border border-blue-600 cursor-no-drop hover:bg-zinc-400 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center  me-2"
+                : "text-black border border-blue-600 hover:bg-sky-400 hover:text-white bg-white  focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center dark:focus:ring-[#3b5998]/55 me-2 "
+            }
             disabled={!isEditMode}
           >
-            <img
-              src="../../src/images/customersAndSuppliers/modify.png"
-              alt=""
-              className="me-2 w-6 h-6"
-            />
+           <ModifyIcon />
             Modify
           </button>
 
@@ -366,14 +367,14 @@ export const CustomerNSuppliers = () => {
               onHandleDelete();
             }}
             type="button"
-            className={ !isEditMode ?'text-black border border-blue-600 cursor-no-drop hover:bg-zinc-400 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center  me-2' : "text-black border border-blue-600 hover:bg-sky-400 hover:text-white bg-white  focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center dark:focus:ring-[#3b5998]/55 me-2 " }
+            className={
+              !isEditMode
+                ? "text-black border border-blue-600 cursor-no-drop hover:bg-zinc-400 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center  me-2"
+                : "text-black border border-blue-600 hover:bg-sky-400 hover:text-white bg-white  focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center dark:focus:ring-[#3b5998]/55 me-2 "
+            }
             disabled={!isEditMode}
           >
-            <img
-              src="../../src/images/customersAndSuppliers/delete.png"
-              alt=""
-              className="me-2 w-6 h-6"
-            />
+          <DeleteIcon />
             Delete
           </button>
         </div>
@@ -387,11 +388,7 @@ export const CustomerNSuppliers = () => {
             type="button"
             className="text-black border border-blue-600 hover:bg-sky-400 hover:text-white bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center dark:focus:ring-[#3b5998]/55 me-2 "
           >
-            <img
-              src="../../src/images/customersAndSuppliers/view.png"
-              alt=""
-              className="me-2 w-6 h-6"
-            />
+            <ViewIcon />
             View
           </button>
 
@@ -402,11 +399,7 @@ export const CustomerNSuppliers = () => {
             type="button"
             className="text-black border hover:bg-sky-400 hover:text-white border-blue-600 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center dark:focus:ring-[#3b5998]/55 me-2 "
           >
-            <img
-              src="../../src/images/customersAndSuppliers/exit.png"
-              alt=""
-              className="me-2 w-6 h-6"
-            />
+           <ExitIcon />
             Exit
           </button>
         </div>
@@ -421,7 +414,9 @@ export const CustomerNSuppliers = () => {
           closeDialog={() => {
             setOpenDeleteModal(false);
           }}
-          handleConfirm={() => { onDeleteRecord()}}
+          handleConfirm={() => {
+            onDeleteRecord();
+          }}
         />
       )}
       {openViewModal && (

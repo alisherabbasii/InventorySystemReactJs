@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import forgetpass from "../../images/logo/forgotpass.svg";
+// import forgetpass from "../../images/logo/forgotpass.svg";
 export default function Forgetpass() {
   return (
     <div className=" text-stone-800 flex items-center justify-evenly bg-[url('../../src/images/logo/background.png')] h-screen ">
@@ -55,7 +55,7 @@ export default function Forgetpass() {
         </div>
       </div>
 
-      <img className=" mt-8 w-5/12 " src={forgetpass} alt="login" />
+      <img className=" mt-8 w-5/12 " src={""} alt="login" />
     </div>
   );
 }

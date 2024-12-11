@@ -13,11 +13,6 @@ import PaymentIcon from '../../images/sidebar/payment.png';
 import { useSelector } from 'react-redux';
 import SidebarLinkGroup from './SidebarLinkGroup';
 import {
-  GraduationCap,
-  Home,
-  MessageCircle,
-  MessageCircleMore,
-  SquareLibrary,
   Users,
 } from 'lucide-react';
 

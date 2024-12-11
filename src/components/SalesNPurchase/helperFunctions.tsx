@@ -1,13 +1,20 @@
 export const getItemNo = (item:any) => {
-    return item?.Item?.itemNo || item?.itemNo || "N/A";
+    return item?.Item?.itemCode || item?.itemCode || "N/A";
   };
-  
+  export const truncateDescription = (description: string, maxLength: number = 50): string => {
+    if (!description) return "";
+    return description.length > maxLength ? `${description.slice(0, maxLength)}...` : description;
+  };
   export const getEnglishDescription = (item:any) => {
-    return item?.Item?.englishDescription || item?.englishDescription || "";
+    const description = item?.Item?.englishDescription || item?.englishDescription || "";
+  return truncateDescription(description, 20);
+    // return item?.Item?.englishDescription || item?.englishDescription || "";
   };
   
   export const getArabicDescription = (item:any) => {
-    return item?.Item?.arabicDescription || item?.arabicDescription || "";
+    // return item?.Item?.arabicDescription || item?.arabicDescription || "";
+    const description = item?.Item?.arabicDescription || item?.arabicDescription || "";
+    return truncateDescription(description, 20);
   };
   
   export const getBasicUnit = (item:any) => {
@@ -15,7 +22,8 @@ export const getItemNo = (item:any) => {
   };
   
   export const getUnitPrice = (item:any) => {
-    return item?.Item?.retailPrice || item?.retailPrice || "N/A";
+    debugger;
+    return item?.retailPrice || item?.retailPrice || "";
   };
   
   export const combineDescription = (english:any, arabic:any) => {
@@ -27,7 +35,7 @@ export const getItemNo = (item:any) => {
   export const getTotalPrice = (item:any, isEditMode:any) => {
     const quantity = item?.quantity || 0;
     
-    const retailPrice = item?.Item?.retailPrice || item?.retailPrice || 0;
+    const retailPrice = item?.retailPrice || item?.retailPrice || 0;
     // Ensure both values are numbers before multiplication
     return quantity * (retailPrice || 0);
   };

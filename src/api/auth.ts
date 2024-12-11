@@ -68,6 +68,17 @@ export const getLastItem = () => {
 export const addItem = (itemData:any) => {
   return axios.post('/items', itemData);
 };
+
+export const addItemFromExcel = (formData:FormData) => {
+  debugger;
+  return axios.post('/items/upload', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
+
+
 export const getAllItems = (page:number,limit:number=10,search="") => {
   return axios.get(`/items/${page}/${limit}/${search}`);
 };

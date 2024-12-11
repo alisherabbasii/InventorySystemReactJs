@@ -12,7 +12,23 @@ import { toast, ToastContainer } from "react-toastify";
 import { useReactToPrint } from "react-to-print";
 import SalesNPurchaseTable from "./ViewTable";
 import { formatDateForInput } from "../Generic/FormatDate";
-import { combineDescription, getArabicDescription, getBasicUnit, getEnglishDescription, getItemNo, getTotalPrice, getUnitPrice } from "./helperFunctions";
+import {
+  combineDescription,
+  getArabicDescription,
+  getBasicUnit,
+  getEnglishDescription,
+  getItemNo,
+  getTotalPrice,
+  getUnitPrice,
+} from "./helperFunctions";
+import {
+  ExitIcon,
+  ModifyIcon,
+  PrintIcon,
+  ViewIcon,
+} from "../Icons/AllButtonIcons";
+import { QuotationIcon } from "../Icons/AllSNPIcons";
+import { getBasicUnitOptions } from "../Generic/GetBasicUnitOptions";
 
 export const Quotation = (props: any) => {
   const { itemss } = props;
@@ -30,8 +46,15 @@ export const Quotation = (props: any) => {
   const [items, setItems] = useState<any>([]);
   const [isEditMode, setIsEditMode] = useState(false);
   const [quotationId, setQuotationId] = useState("");
+  const [showEngDesc, setShowEngDesc] = useState(true);
   const contentRef = useRef<HTMLDivElement>(null);
-  const reactToPrintFn = useReactToPrint({ contentRef });
+  const reactToPrintFn = useReactToPrint({ contentRef,pageStyle: `
+    @media print {
+      [data-printable="false"] {
+        display: none !important;
+      }
+    }
+  ` });
 
   const handleSearchProduct = (e: any) => {
     if (e.target.value) {
@@ -72,7 +95,7 @@ export const Quotation = (props: any) => {
     setCustomerName(item?.Party?.name);
     setCustomerAddress(item.Party?.address);
     setPaymentTerms(item.paymentTerms);
-    setItems(item.QuotationItems);
+    setItems(item.QuotationItems); //unitPrice
     setOpenViewQuotationModal(false);
   };
 
@@ -99,6 +122,7 @@ export const Quotation = (props: any) => {
       items,
       totalAmount: grandTotal,
     };
+    debugger;
     console.log(obj);
     if (isEditMode) {
       try {
@@ -145,23 +169,36 @@ export const Quotation = (props: any) => {
       )
     );
   };
-
   // Calculate the total for all items
   const grandTotal = items.reduce(
     (sum: any, item: any) =>
-      sum +
-      item.quantity * (item?.Item?.retailPrice || item?.retailPrice || 0),
+      sum + item.quantity * (item?.retailPrice || item?.retailPrice || 0),
     0
   );
 
+  const handleBasicUnitChange = (index: number, value: string) => {
+    setItems((prevItems: any) =>
+      prevItems.map((item: any, i: any) =>
+        i === index ? { ...item, basicUnit: value } : item
+      )
+    );
+  };
 
+  const handleUnitPriceChange = (index: number, value: string) => {
+    const parsedValue = value === "" ? "" : parseFloat(value);
+    setItems((prevItems: any) =>
+      prevItems.map((item: any, i: any) =>
+        i === index ? { ...item, retailPrice: parsedValue } : item
+      )
+    );
+  };
   return (
     <div>
       <ToastContainer />
       {/* Form */}
       <div ref={contentRef}>
-        <div className="flex justify-between items-center gap-6 mb-6">
-          <div className="w-8/12 grid grid-cols-2 gap-6  p-6  ">
+        <div className="flex justify-between items-center  mb-6">
+          <div className="min-w-96 grid grid-cols-3 gap-6  p-6  ">
             <div>
               <label className="block font-bold mb-2">Invoice No</label>
               <input
@@ -198,17 +235,7 @@ export const Quotation = (props: any) => {
                 placeholder="select customer"
               />
             </div>
-            <div>
-              <label className="block font-bold mb-2">Payment Terms</label>
-              <select
-                className="w-full border rounded px-4 py-2"
-                value={paymentTerms}
-                onChange={(e) => setPaymentTerms(e.target.value)}
-              >
-                <option value="credit">Credit</option>
-                <option value="cash">Cash</option>
-              </select>
-            </div>
+          
             <div>
               <label className="block font-bold mb-2">Customer Name</label>
               <input
@@ -231,13 +258,21 @@ export const Quotation = (props: any) => {
                 placeholder="Customer Address"
               />
             </div>
+            <div>
+              <label className="block font-bold mb-2">Payment Terms</label>
+              <select
+                className="w-full border rounded px-4 py-2"
+                value={paymentTerms}
+                onChange={(e) => setPaymentTerms(e.target.value)}
+              >
+                <option value="credit">Credit</option>
+                <option value="cash">Cash</option>
+                <option value="cheque">Cheque</option>
+              </select>
+            </div>
           </div>
           <div>
-            <img
-              src="../../src/images/sales/quotation.png"
-              alt="Image"
-              className=""
-            />
+            <QuotationIcon />
           </div>
         </div>
 
@@ -246,7 +281,7 @@ export const Quotation = (props: any) => {
             <thead>
               <tr>
                 <th className="border border-gray-300 px-4 py-2">#</th>
-                <th className="border border-gray-300 px-4 py-2">Item no</th>
+                <th className="border border-gray-300 px-4 py-2">Item code</th>
                 <th className="border border-gray-300 px-4 py-2">
                   Description
                 </th>
@@ -260,45 +295,68 @@ export const Quotation = (props: any) => {
             <tbody>
               {items.map((item: any, index: any) => (
                 <tr key={index}>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td className="border border-gray-300 px-4 py-2 w-2">
                     {index + 1}
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">
-                  {getItemNo(item)}
+                  <td className="border border-gray-300 px-4 w-2 py-2">
+                    {getItemNo(item)}
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">
-                  {combineDescription(
-                      getEnglishDescription(item),
-                      getArabicDescription(item)
-                    )}
+                  <td
+                    className=" pl-2 border-b border-gray-300 "
+                    onClick={() => {
+                      setShowEngDesc(!showEngDesc);
+                    }}
+                  >
+                    {showEngDesc
+                      ? getEnglishDescription(item)
+                      : getArabicDescription(item)}
                   </td>
-                  {/* <td className="border border-gray-300 px-4 py-2">
-                  {item.store}
-                </td> */}
-                  <td className="border border-gray-300 px-4 py-2">
-                  {getBasicUnit(item)}
+                  <td className="border border-gray-300 px-2 ">
+                    {/* {getBasicUnit(item)} */}
+                    <select
+                      value={item?.basicUnit} // Ensure this returns the `value`, not `label`
+                      onChange={(e) =>
+                        handleBasicUnitChange(index, e.target.value)
+                      }
+                      className="rounded py-1 w-full appearance-none"
+                    >
+                      {getBasicUnitOptions(item).map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td className="border border-gray-300 px-4 py-2 w-28">
                     <input
                       type="number"
                       min="1"
-                      value={item.quantity || 0}
+                      value={item.quantity > 0 ? item.quantity : ""}
                       onChange={(e) =>
                         handleQuantityChange(index, e.target.value)
                       }
-                      className="border border-gray-300 rounded px-2 py-1 w-full"
+                      className=" px-2 py-1 w-full"
                     />
                   </td>
                   {/* Unit price(dont confuse with retailPrice it's same) */}
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td className="border border-gray-300 px-4 py-2 w-28">
                     {/* {isEditMode ? item?.Item?.retailPrice : item.retailPrice} */}
-                    {getUnitPrice(item)}
+                    {/* {getUnitPrice(item)} */}
+                    <input
+                      type="number"
+                      min="1"
+                      value={getUnitPrice(item)}
+                      onChange={(e) =>
+                        handleUnitPriceChange(index, e.target.value)
+                      }
+                      className=" px-2 py-1 w-full"
+                    />
                   </td>
 
                   <td className="border border-gray-300 px-4 py-2">
-                  {getTotalPrice(item, isEditMode)}
+                    {getTotalPrice(item, isEditMode)}
                   </td>
-                  <td>
+                  <td data-printable="false">
                     <button
                       onClick={() => {
                         onRemoveItem(item);
@@ -311,7 +369,7 @@ export const Quotation = (props: any) => {
               ))}
 
               <tr>
-                <td colSpan={8}>
+                <td colSpan={8} data-printable="false" >
                   <input
                     className="w-full border border-gray-300 px-4 py-2 "
                     type="text"
@@ -369,11 +427,7 @@ export const Quotation = (props: any) => {
           type="button"
           className="text-black border border-blue-600 bg-white hover:bg-sky-400 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center dark:focus:ring-[#3b5998]/55 me-2 "
         >
-          <img
-            src="../../src/images/customersAndSuppliers/print.png"
-            alt=""
-            className="me-2 w-6 h-6"
-          />
+          <PrintIcon />
           Print
         </button>
 
@@ -384,24 +438,18 @@ export const Quotation = (props: any) => {
           type="button"
           className="text-black border border-blue-600 hover:bg-sky-400 hover:text-white bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center dark:focus:ring-[#3b5998]/55 me-2 "
         >
-          <img
-            src="../../src/images/customersAndSuppliers/modify.png"
-            alt=""
-            className="me-2 w-6 h-6"
-          />
+          <ModifyIcon />
           {isEditMode ? "Update" : "Save"}
         </button>
 
         <button
-          onClick={() => { clearFields();}}
+          onClick={() => {
+            clearFields();
+          }}
           type="button"
           className="text-black border border-blue-600 hover:bg-sky-400 hover:text-white bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center dark:focus:ring-[#3b5998]/55 me-2 "
         >
-          <img
-            src="../../src/images/customersAndSuppliers/delete.png"
-            alt=""
-            className="me-2 w-6 h-6"
-          />
+          <ExitIcon />
           Cancel
         </button>
 
@@ -413,11 +461,7 @@ export const Quotation = (props: any) => {
           type="button"
           className="text-black border border-blue-600 hover:bg-sky-400 hover:text-white bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center dark:focus:ring-[#3b5998]/55 me-2 "
         >
-          <img
-            src="../../src/images/customersAndSuppliers/view.png"
-            alt=""
-            className="me-2 w-6 h-6"
-          />
+          <ViewIcon />
           View
         </button>
       </div>

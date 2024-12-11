@@ -73,7 +73,7 @@ const ItemList = ({ onEdit,searchQuerry }: any) => {
             <thead>
               <tr className="bg-gray-200">
                 <th className="border border-gray-300 px-4 py-2">#</th>
-                <th className="border border-gray-300 px-4 py-2">Item No</th>
+                <th className="border border-gray-300 px-4 py-2">Item Code</th>
                 <th className="border border-gray-300 px-4 py-2">
                   Description
                 </th>
@@ -97,7 +97,7 @@ const ItemList = ({ onEdit,searchQuerry }: any) => {
                     {index + 1}
                   </td>
                   <td className="border border-gray-300 px-4 py-2">
-                    {item.itemNo}
+                    {item.itemCode}
                   </td>
                   <td className="border border-gray-300 px-4 py-2">
                     {item?.englishDescription} {"("} {item?.arabicDescription} {")"}
