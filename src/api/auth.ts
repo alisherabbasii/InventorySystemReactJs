@@ -84,6 +84,7 @@ export const getAllItems = (page:number,limit:number=10,search="") => {
 };
 
 export const updateItem = (updateData:any,id:any) => {
+  debugger;
   return axios.put(`/items/${id}`, updateData);
 };
 

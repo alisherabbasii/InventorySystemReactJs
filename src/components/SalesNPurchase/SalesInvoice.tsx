@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useReactToPrint } from "react-to-print";
 import { toast, ToastContainer } from "react-toastify";
-import { combineDescription, getArabicDescription, getBasicUnit, getEnglishDescription, getItemNo, getTotalPrice, getUnitPrice } from "./helperFunctions";
+import { combineDescription, getArabicDescription, getBasicUnit, getCostPrice, getEnglishDescription, getItemNo, getReservedQuantity, getTotalPrice, getUnitPrice } from "./helperFunctions";
 import { DeleteIcon as DeleteLIcon } from "lucide-react";
 import { OpenModal } from "../Generic/OpenModal";
 import ItemList from "../StockControls/ItemList";
@@ -31,6 +31,8 @@ export const SalesInvoice = (props:any) => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [salesInvoiceId, setSalesInvoiceId] = useState("");
   const [showEngDesc,setShowEngDesc] = useState(true);
+  const [printMode,setPrintMode] = useState(false);
+
 
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({ contentRef,pageStyle: `
@@ -38,8 +40,18 @@ export const SalesInvoice = (props:any) => {
       [data-printable="false"] {
         display: none !important;
       }
+        table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      th, td {
+        border: 1px solid black;
+        padding: 4px;
+        text-align: center;
+      }
     }
-  ` });
+  `,
+  onAfterPrint: () => setPrintMode(false), });
 
   const handleSearchProduct = (e: any) => {
     if (e.target.value) {
@@ -160,6 +172,15 @@ export const SalesInvoice = (props:any) => {
       sum + item.quantity * (item?.retailPrice || item?.retailPrice || 0),
     0
   );
+
+  // Calculate the total profit using cost price and price we entered for all items
+  const totalProfit = items.reduce((sum:any, item:any) => {
+    const unitPrice = getUnitPrice(item) || 0;
+    const costPrice = getCostPrice(item) || 0;
+    const profit = (( costPrice - unitPrice) * item.quantity) || 0; // Calculate profit for each row
+    return sum + profit;
+  }, 0);
+
   const handleBasicUnitChange = (index: number, value: string) => {
     setItems((prevItems: any) =>
       prevItems.map((item: any, i: any) =>
@@ -170,7 +191,7 @@ export const SalesInvoice = (props:any) => {
   const handleUnitPriceChange = (index: number, value: string) => {
     setItems((prevItems: any) =>
       prevItems.map((item: any, i: any) =>
-        i === index ? { ...item, retailPrice: parseInt(value) || 0 } : item
+        i === index ? { ...item, retailPrice: parseFloat(value) || 0 } : item
       )
     );
   };
@@ -179,8 +200,9 @@ export const SalesInvoice = (props:any) => {
       <ToastContainer />
       {/* Form */}
       <div ref={contentRef}>
+        {printMode && <h2 className="text-2xl font-bold mb-6 text-center underline">Sales Invoice</h2>}
         <div className="flex justify-between items-center  mb-6">
-          <div className="min-w-96 grid grid-cols-3 gap-6  p-6  ">
+          <div className={printMode ? "min-w-96 grid grid-cols-4 gap-6  p-6" : "min-w-96 grid grid-cols-3 gap-6  p-6  " }>
             <div>
               <label className="block font-bold mb-2">Invoice No</label>
               <input
@@ -201,22 +223,17 @@ export const SalesInvoice = (props:any) => {
                 onChange={(e) => setDate(e.target.value)}
               />
             </div>
-            <div>
+            {/* <div>
               <label className="block font-bold mb-2">Customer No</label>
               <input
                 type="text"
                 className="w-full border rounded px-4 py-2"
                 value={customerNo}
                 onChange={(e) => setCustomerNo(e.target.value)}
-                onClick={() => {
-                  if (!isEditMode) {
-                    setOpenPartyModal(true);
-                  }
-                }}
-                readOnly
+                
                 placeholder="select customer"
               />
-            </div>
+            </div> */}
           
             <div>
               <label className="block font-bold mb-2">Customer Name</label>
@@ -224,12 +241,18 @@ export const SalesInvoice = (props:any) => {
                 type="text"
                 className="w-full border rounded px-4 py-2"
                 value={customerName}
+                onClick={() => {
+                  if (!isEditMode) {
+                    setOpenPartyModal(true);
+                  }
+                }}
+                readOnly
                 onChange={(e) => setCustomerName(e.target.value)}
-                disabled
+                
                 placeholder="Customer Name"
               />
             </div>
-            <div>
+            {/* <div>
               <label className="block font-bold mb-2">Customer Address</label>
               <input
                 type="text"
@@ -239,7 +262,7 @@ export const SalesInvoice = (props:any) => {
                 disabled
                 placeholder="Customer Address"
               />
-            </div>
+            </div> */}
 
             <div>
               <label className="block font-bold mb-2">Payment Terms</label>
@@ -255,51 +278,96 @@ export const SalesInvoice = (props:any) => {
               </select>
             </div>
           </div>
+          {!printMode && 
           <div>
               <SalesInvoiceIcon />  
           </div>
+          }
         </div>
 
-        <div className="bg-white p-6 rounded shadow-md">
-          <table className="w-full border-collapse border border-gray-300 mb-6">
+      
+
+        {printMode ? 
+         ( <div data-printable={printMode ? "true" : "false"} className="print-table-container">
+          <table className="print-table">
             <thead>
               <tr>
-                <th className="border border-gray-300 px-4 py-2">#</th>
-                <th className="border border-gray-300 px-4 py-2">Item no</th>
-                <th className="border border-gray-300 px-4 py-2">
-                  Description
-                </th>
-                {/* <th className="border border-gray-300 px-4 py-2">Store no</th> */}
-                <th className="border border-gray-300 px-4 py-2">Unit</th>
-                <th className="border border-gray-300 px-4 py-2">Qty</th>
-                <th className="border border-gray-300 px-4 py-2">Unit Price</th>
-                <th className="border border-gray-300 px-4 py-2">Total</th>
+                <th>#</th>
+                <th>Item no</th>
+                <th>Description</th>
+                <th>Unit</th>
+                <th>Qty</th>
+                <th>Unit Price</th>
+                <th>Total</th>
               </tr>
             </thead>
             <tbody>
               {items.map((item: any, index: any) => (
                 <tr key={index}>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td>{index + 1}</td>
+                  <td>{getItemNo(item)}</td>
+                  <td>{showEngDesc ? getEnglishDescription(item) : getArabicDescription(item)}</td>
+                  <td>{item.basicUnit}</td>
+                  <td>{item.quantity}</td>
+                  <td>{getUnitPrice(item).toFixed(2)}</td>
+                  <td>{getTotalPrice(item, isEditMode).toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+           {/* Summary */}
+           <div className="flex flex-col items-end space-y-4">
+            <div className="flex items-center gap-4">
+              <p className="font-bold">Grand Total</p>
+              <input
+                type="text"
+                value={grandTotal ? grandTotal.toFixed(2) : 0}
+                className="w-32 text-black font-bold rounded px-2 py-1 bg-sky-400"
+                readOnly
+              />
+            </div>
+          </div>
+        </div>)
+        :(
+          <div data-printable={printMode ? "true" : "false"} className="bg-white p-6 rounded shadow-md">
+          <table className="w-full border-collapse border border-gray-300 mb-6">
+            <thead>
+              <tr>
+                <th className={ "border border-gray-300 px-4 py-2"}>#</th>
+                <th className={ "border border-gray-300 px-4 py-2"}>Item no</th>
+                <th className={ "border border-gray-300 px-4 py-2"}>
+                  Description
+                </th>
+                {/* <th className={ "border border-gray-300 px-4 py-2"}>Store no</th> */}
+                <th className={ "border border-gray-300 px-4 py-2"}>Unit</th>
+                <th className={ "border border-gray-300 px-4 py-2"}>Qty</th>
+                <th className={ "border border-gray-300 px-4 py-2"}>Unit Price</th>
+                <th className={ "border border-gray-300 px-4 py-2"}>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item: any, index: any) => (
+                <tr key={index}>
+                  <td className={ "border border-gray-300 px-4 py-2"}>
                     {index + 1}
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td className={ "border border-gray-300 px-4 py-2"}>
                   {getItemNo(item)}
                   </td>
-                  <td className="border border-gray-300 px-4 py-2" onClick={()=>{setShowEngDesc(!showEngDesc)}}>
+                  <td style={{minWidth:'15rem'}} className={ "border border-gray-300 px-4 py-2 "} onClick={()=>{setShowEngDesc(!showEngDesc)}}>
                   {showEngDesc ? getEnglishDescription(item) :getArabicDescription(item) }
-
                   </td>
                   {/* <td className="border border-gray-300 px-4 py-2">
                   {item.store}
                 </td> */}
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td className={ printMode ? '': "border border-gray-300 px-4 py-2 "}>
                   {/* {getBasicUnit(item)} */}
                   <select
                       value={item?.basicUnit} // Ensure this returns the `value`, not `label`
                       onChange={(e) =>
                         handleBasicUnitChange(index, e.target.value)
                       }
-                      className="appearance-none rounded px-2 py-1 w-full"
+                      className="appearance-none px-2 py-1 w-full"
                     >
                       {getBasicUnitOptions(item).map((option) => (
                         <option key={option.value} value={option.value}>
@@ -308,7 +376,8 @@ export const SalesInvoice = (props:any) => {
                       ))}
                     </select>
                   </td>
-                  <td className=" px-4 py-2 w-28">
+                  <td className={"gap-4 border border-gray-300 px-4 py-2  "}>
+                    <div className="flex"> 
                     <input
                       type="number"
                       min="1"
@@ -318,24 +387,36 @@ export const SalesInvoice = (props:any) => {
                       }
                       className="rounded px-2 py-1 w-full"
                     />
+                        <div data-printable="false" className="flex items-center">
+                    {" / "}
+                    <span className="font-bold">RQ:</span>
+                    <span title="Cost Price">{getReservedQuantity(item)}</span>
+                    </div>
+                    </div>
                   </td>
                   {/* Unit price(dont confuse with retailPrice it's same) */}
-                  <td className="border border-gray-300 px-4 py-2 w-28">
+                  <td className={  "flex items-center gap-4 border border-gray-300 px-4 py-2 "}>
                     {/* {isEditMode ? item?.Item?.retailPrice : item.retailPrice} */}
                     {/* {getUnitPrice(item)} */}
                     <input
                       type="number"
-                      min="1"
+                       step="any"
+                        min="1"
                       value={getUnitPrice(item)}
                       onChange={(e) =>
                         handleUnitPriceChange(index, e.target.value)
                       }
                       className=" rounded px-2 py-1 w-full"
                     />
+                    <div data-printable="false" className="flex items-center">
+                    {" / "}
+                    <span className="font-bold">CP:</span>
+                    <span title="Cost Price">{getCostPrice(item)}</span>
+                    </div>
                   </td>
 
-                  <td className="border border-gray-300 px-4 py-2">
-                  {getTotalPrice(item, isEditMode)}
+                  <td className={"border border-gray-300 px-4 py-2 "}>
+                  {getTotalPrice(item, isEditMode).toFixed(2)}
                   </td>
                   <td data-printable="false">
                     <button
@@ -376,14 +457,30 @@ export const SalesInvoice = (props:any) => {
                 readOnly
               />
             </div>
+
+            <div data-printable="false" className="flex items-center gap-4">
+              <p className="font-bold">Total Profit</p>
+              <input
+                type="text"
+                value={totalProfit ? totalProfit.toFixed(2) : 0}
+                className="w-32 text-white rounded px-2 py-1 bg-sky-400"
+                readOnly
+              />
+            </div>
           </div>
         </div>
+        )
+        }
       </div>
       <div className="flex justify-end mt-6">
         <button
           onClick={() => {
             // handlePrint();
-            reactToPrintFn();
+            setPrintMode(true);
+            setTimeout(()=>{
+              reactToPrintFn();
+            },100)
+         
           }}
           type="button"
           className="text-black border border-blue-600 bg-white hover:bg-sky-400 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center dark:focus:ring-[#3b5998]/55 me-2 "

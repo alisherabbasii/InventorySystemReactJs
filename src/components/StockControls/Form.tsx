@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { addItem, addItemFromExcel, deleteItem, getLastItem, updateItem } from "../../api/auth";
+import {
+  addItem,
+  addItemFromExcel,
+  deleteItem,
+  getLastItem,
+  updateItem,
+} from "../../api/auth";
 import { toast, ToastContainer } from "react-toastify";
 import { OpenModal } from "../Generic/OpenModal";
 import ItemList from "./ItemList";
@@ -11,6 +17,7 @@ import {
   ViewIcon,
 } from "../Icons/AllButtonIcons";
 import { getBasicUnitOptions } from "../Generic/GetBasicUnitOptions";
+import { LucideLoader } from "lucide-react";
 
 export const Form = () => {
   const [formData, setFormData] = useState({
@@ -33,10 +40,9 @@ export const Form = () => {
   const [itemId, setItemId] = useState("");
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [file, setFile] = useState(null);
-  const [uploadStatus, setUploadStatus] = useState('');
+  const [uploadStatus, setUploadStatus] = useState("");
   const [showExcelForm, setShowExcelForm] = useState(false);
-
-
+  const [loading, setIsLoading] = useState(false);
 
   useEffect(() => {
     getItemNo();
@@ -100,6 +106,7 @@ export const Form = () => {
       itemCode: "",
     });
     setItemId("");
+    getItemNo();
   };
 
   function onHandleDelete() {
@@ -155,65 +162,78 @@ export const Form = () => {
     }
   };
 
-  const handleFileChange = (e:any) => {
+  const handleFileChange = (e: any) => {
     setFile(e.target.files[0]);
   };
 
-  const handleUpload = async (e:any) => {
+  const handleUpload = async (e: any) => {
     e.preventDefault();
 
     if (!file) {
-      setUploadStatus('Please select a file.');
+      setUploadStatus("Please select a file.");
       return;
     }
+    setIsLoading(true);
 
     const formDataa = new FormData();
-    formDataa.append('file', file); 
+    formDataa.append("file", file);
 
     try {
       const response = await addItemFromExcel(formDataa);
       debugger;
       if (response.data) {
-        setUploadStatus('Products imported successfully');
+        setUploadStatus("Products imported successfully");
         toast.success("Items uploaded successfully");
         clearFields();
+        setFile(null);
       } else if (response.status == 400) {
         toast.info("please fill out all the fields");
       }
+      setIsLoading(false);
     } catch (error) {
-      setUploadStatus('Failed to import products');
-      console.error('Error:', error);
+      setUploadStatus("Failed to import products");
+      console.error("Error:", error);
       toast.error("Error updating item");
+      setIsLoading(false);
     }
   };
 
   return (
     <div>
       <ToastContainer />
-{showExcelForm && 
-      <div className="container mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-4">Import Products via Excel</h2>
-      
-        <input
-          type="file"
-          accept=".xlsx, .xls"
-          onChange={handleFileChange}
-          className="mb-4"
-        />
-        <button
-          type="button"
-          onClick={handleUpload}
-          className="bg-blue-500 text-white py-2 px-4 rounded"
-        >
-          Upload
-        </button>
-      {uploadStatus && <p className="mt-4">{uploadStatus}</p>}
-    </div>
-    }
+      {showExcelForm && (
+        <div className="container mx-auto p-4">
+          <h2 className="text-2xl font-bold mb-4">Import Products via Excel</h2>
+
+          <input
+            type="file"
+            accept=".xlsx, .xls"
+            onChange={handleFileChange}
+            className="mb-4"
+          />
+          <button
+            type="button"
+            onClick={handleUpload}
+            className="bg-blue-500 text-white py-2 px-4 rounded"
+            disabled={loading}
+          >
+            {loading ? <LucideLoader /> : "Upload"}
+          </button>
+          {uploadStatus && <p className="mt-4 bg-green-500 text-white py-4 px-4 rounded ">{uploadStatus}</p>} 
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="mt-6">
-        <div className="flex justify-between">  
-        <h2 className="text-xl font-semibold mb-6">Add Item</h2>
-        <button type="button" className="bg-indigo-500 text-sm h-8 text-white px-2 rounded" onClick={()=>{setShowExcelForm(!showExcelForm)}}>Import from Excel</button>
+        <div className="flex justify-between">
+          <h2 className="text-xl font-semibold mb-6">Add Item</h2>
+          <button
+            type="button"
+            className="bg-indigo-500 text-sm h-8 text-white px-2 rounded"
+            onClick={() => {
+              setShowExcelForm(!showExcelForm);
+            }}
+          >
+            Import from Excel
+          </button>
         </div>
         <div className="grid grid-cols-3 gap-4 mb-4">
           <div>

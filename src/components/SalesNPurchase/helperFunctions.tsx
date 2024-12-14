@@ -26,6 +26,14 @@ export const getItemNo = (item:any) => {
     return item?.retailPrice || item?.retailPrice || "";
   };
   
+  export const getCostPrice = (item:any) => {
+    return item?.Item?.costPrice || item?.costPrice || "N/A";
+  };
+
+  export const getReservedQuantity = (item:any) => {
+    return item?.Item?.reservedQuantity || item?.reservedQuantity || "N/A";
+  };
+  // reservedQuantity
   export const combineDescription = (english:any, arabic:any) => {
     return `${english || "No English Description"} / ${
       arabic || "No Arabic Description"
