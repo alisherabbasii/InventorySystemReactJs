@@ -151,25 +151,25 @@ const CustomersTable = (props: any) => {
               .map((customer: any) => (
                 <tr key={customer.id} className="text-center bg-slate-50">
                   <td className="border-b border-[#EAECF0] px-4 py-2">
-                    {customer.party_no}
+                    {customer?.party_no || "N/A"}
                   </td>
                   <td className="border-b border-[#EAECF0] px-4 py-2">
-                    {customer.name}
+                    {customer?.name || "N/A"}
                   </td>
                   <td className="border-b border-[#EAECF0] px-4 py-2">
-                    {customer?.commercial_record}
+                    {customer?.commercial_record || "N/A"}
                   </td>
                   <td className="border-b border-[#EAECF0] px-4 py-2">
                     {customer?.type =='vendor' ? "Customer" : "Supplier"}
                   </td>
                   <td className="border-b border-[#EAECF0] px-4 py-2">
-                    {customer.balance}
+                    {customer?.balance || "0"}
                   </td>
                   <td className="border-b border-[#EAECF0] px-4 py-2">
-                    {customer.address}
+                    {customer?.address || "N/A"}
                   </td>
                   <td className="border-b border-[#EAECF0] px-4 py-2">
-                    {customer.tax_number}
+                    {customer?.tax_number || "N/A"}
                   </td>
                   <td className="border-b border-[#EAECF0] px-4 py-2">
                     {formatDate(customer.createdAt)}
