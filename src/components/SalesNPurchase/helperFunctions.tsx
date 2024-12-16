@@ -27,11 +27,11 @@ export const getItemNo = (item:any) => {
   };
   
   export const getCostPrice = (item:any) => {
-    return item?.Item?.costPrice || item?.costPrice || "N/A";
+    return item?.Item?.costPrice || item?.costPrice || 0;
   };
 
   export const getReservedQuantity = (item:any) => {
-    return item?.Item?.reservedQuantity || item?.reservedQuantity || "N/A";
+    return item?.Item?.reservedQuantity || item?.reservedQuantity || 0;
   };
   // reservedQuantity
   export const combineDescription = (english:any, arabic:any) => {

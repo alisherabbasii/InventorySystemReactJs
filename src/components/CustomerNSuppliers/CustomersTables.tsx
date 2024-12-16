@@ -131,6 +131,9 @@ const CustomersTable = (props: any) => {
               <th className="border-r border-[#c1c5cd] px-4 py-2">
                 Customer Name
               </th>
+              <th className="border-r border-[#c1c5cd] px-4 py-2">
+                Bank Account no
+              </th>
               <th className="border-r border-[#c1c5cd] px-4 py-2">Type</th>
               <th className="border-r border-[#c1c5cd] px-4 py-2">Balance</th>
               <th className="border-r border-[#c1c5cd] px-4 py-2">Address</th>
@@ -154,7 +157,10 @@ const CustomersTable = (props: any) => {
                     {customer.name}
                   </td>
                   <td className="border-b border-[#EAECF0] px-4 py-2">
-                    {customer?.type}
+                    {customer?.commercial_record}
+                  </td>
+                  <td className="border-b border-[#EAECF0] px-4 py-2">
+                    {customer?.type =='vendor' ? "Customer" : "Supplier"}
                   </td>
                   <td className="border-b border-[#EAECF0] px-4 py-2">
                     {customer.balance}
