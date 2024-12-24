@@ -55,6 +55,25 @@ export const SalesInvoice = (props: any) => {
   const [activeReservedQuantity, setActiveReservedQuantity] = useState(0);
   const [activeRowIndex, setActiveRowIndex] = useState(null);
   const [confirmationModal,setConfirmationModal] = useState(false);
+
+  const [isCtrlPressed, setIsCtrlPressed] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Control') {
+        setIsCtrlPressed((prev) => !prev); // Toggle state
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    // Cleanup the event listener on component unmount
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+
   // Handle focus on the quantity input
   const handleInputFocus = (index: any, item: any) => {
     setActiveRowIndex(index);
@@ -233,7 +252,7 @@ export const SalesInvoice = (props: any) => {
   const totalProfit = items.reduce((sum: any, item: any) => {
     const unitPrice = getUnitPrice(item) || 0;
     const costPrice = getCostPrice(item) || 0;
-    const profit = (costPrice - unitPrice) * item.quantity || 0; // Calculate profit for each row
+    const profit = (unitPrice - costPrice) * item.quantity || 0; // Calculate profit for each row
     return sum + profit;
   }, 0);
 
@@ -244,22 +263,39 @@ export const SalesInvoice = (props: any) => {
       )
     );
   };
-  const handleUnitPriceChange = (index: number, value: string) => {
+  // Handle unit price change on input
+  const handleUnitPriceChange = (index:any, value:any) => {
     const updatedValue = parseFloat(value) || 0;
-    const costPrice = getCostPrice(items[index]);
 
-    if (updatedValue > costPrice) {
-      const userConfirmed = window.confirm(
-        `The entered unit price (${updatedValue}) is greater than the cost price (${costPrice}). Do you want to continue?`
-      );
-      if (!userConfirmed) return; // Stop further execution if user cancels
-    }
-
-    setItems((prevItems: any) =>
-      prevItems.map((item: any, i: any) =>
-        i === index ? { ...item, retailPrice: updatedValue || 0 } : item
+    // Update the unit price immediately without checking cost price
+    setItems((prevItems:any) =>
+      prevItems.map((item:any, i:any) =>
+        i === index ? { ...item, retailPrice: updatedValue } : item
       )
     );
+  };
+
+  // Handle blur (when user finishes typing and leaves input)
+  const handleUnitPriceBlur = (index:any) => {
+    const item = items[index];
+    const updatedValue = item.retailPrice;
+    const costPrice = getCostPrice(item);
+
+    // Check if unit price is less than cost price
+    if (updatedValue < costPrice) {
+      const userConfirmed = window.confirm(
+        `The entered unit price (${updatedValue}) is less than the cost price (${costPrice}). Do you want to continue?`
+      );
+
+      if (!userConfirmed) {
+        // Revert price back to cost price if user cancels
+        setItems((prevItems:any) =>
+          prevItems.map((item:any, i:any) =>
+            i === index ? { ...item, retailPrice: costPrice } : item
+          )
+        );
+      }
+    }
   };
   return (
     <div>
@@ -414,6 +450,7 @@ export const SalesInvoice = (props: any) => {
           >
             <table className="w-full border-collapse border border-gray-300 mb-6">
               <thead>
+              {isCtrlPressed && 
                 <tr data-printable="false">
                   <th></th>
                   <th></th>
@@ -432,6 +469,7 @@ export const SalesInvoice = (props: any) => {
                     </span>
                   </th>
                 </tr>
+                }
                 <tr>
                   <th className={"border border-gray-300 px-4 py-2"}>#</th>
                   <th className={"border border-gray-300 px-4 py-2"}>
@@ -448,6 +486,7 @@ export const SalesInvoice = (props: any) => {
                   </th>
                   <th className={"border border-gray-300 px-4 py-2"}>Total</th>
                 </tr>
+                
               </thead>
               <tbody>
                 {items.map((item: any, index: any) => (
@@ -523,9 +562,8 @@ export const SalesInvoice = (props: any) => {
                         min="1"
                         value={getUnitPrice(item)}
                         onFocus={() => handleInputFocus(index, item)}
-                        onChange={(e) =>
-                          handleUnitPriceChange(index, e.target.value)
-                        }
+                        onChange={(e) => handleUnitPriceChange(index, e.target.value)}
+                        onBlur={() => handleUnitPriceBlur(index)} // Trigger check on blur
                         className=" rounded px-2 py-1 w-full"
                       />
                       {/* <div data-printable="false" className="flex items-center">

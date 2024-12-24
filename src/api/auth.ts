@@ -196,3 +196,7 @@ export const getAllSalesReturnItems = (page:number,limit:number=10,search="") =>
 export const updateSalesReturn = (updateData:any,id:any) => {
   return axios.put(`/salesreturn/${id}`, updateData);
 };
+
+export const getAllCustomersStatement = (partyId:any,fromDate:any,toDate:any) => {
+  return axios.get(`/accountstatement/account-statement/${partyId}/${fromDate}/${toDate}`);
+};

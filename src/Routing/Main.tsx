@@ -9,12 +9,12 @@ import SignIn from "../pages/Authentication/SignIn";
 import PageTitle from "../components/PageTitle";
 import { CustomerNSuppliers } from "../components/CustomerNSuppliers";
 import { SalesNPurchases } from "../components/SalesNPurchase";
-import { GeneralAccounts } from "../components/GeneralAccounts";
 import { Exit } from "../components/Exit";
 import StockManagementForm from "../components/StockControls";
 import PaymentVouchers from "../components/PaymentNReceipt";
 import { AdminLogin } from "../components/Admin/Login";
 import AdminManagement from "../components/Admin/AddUser";
+import GeneralAccounts from "../components/GeneralAccounts";
 
 
 
