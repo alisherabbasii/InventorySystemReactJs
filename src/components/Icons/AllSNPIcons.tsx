@@ -31,6 +31,8 @@ export const SalesInvoiceIcon = () => {
       src={SalesInvoice}
       alt=""
       className=""
+      height={150}
+      width={150}
     />
   )
 }

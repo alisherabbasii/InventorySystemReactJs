@@ -120,5 +120,5 @@ select{
     @apply block text-sm mb-1;
 }
 .input{
-    @apply border rounded px-2 py-1 w-full;
+    @apply w-full border rounded px-2 ;
 }

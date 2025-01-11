@@ -170,7 +170,7 @@ const SalesNPurchaseTable = ({ onView,searchQuerry,from }: any) => {
             </thead>
             <tbody>
               {items.map((item: any, index) => (
-                <tr key={item.itemNo} className="text-center">
+                <tr onDoubleClick={() => onView(item)} key={item.itemNo} className="text-center cursor-pointer">
                   <td className="border border-gray-300 px-4 py-2">
                     {index + 1}
                   </td>

@@ -21,6 +21,7 @@ import { formatDateForInput } from "../Generic/FormatDate";
 import {
   createSalesInvoice,
   getLastSINo,
+  getSaleInvoiceByParty,
   updateSalesInvoice,
 } from "../../api/auth";
 import {
@@ -36,7 +37,7 @@ import { ConfirmationDialog } from "../Generic/ConfirmationDialog";
 export const SalesInvoice = (props: any) => {
   const { itemss } = props;
   const [invoiceNo, setInvoiceNo] = useState("");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState<any>(formatDateForInput(new Date().toISOString()));
   const [customerNo, setCustomerNo] = useState("");
   const [paymentTerms, setPaymentTerms] = useState("cash");
   const [customerName, setCustomerName] = useState("");
@@ -53,8 +54,11 @@ export const SalesInvoice = (props: any) => {
   const [printMode, setPrintMode] = useState(false);
   const [activeCostPrice, setActiveCostPrice] = useState(0);
   const [activeReservedQuantity, setActiveReservedQuantity] = useState(0);
+  const [previousPrice, setPreviousPrice] = useState(0);
+
   const [activeRowIndex, setActiveRowIndex] = useState(null);
   const [confirmationModal,setConfirmationModal] = useState(false);
+  const [prevQuery, setPrevQuery] = useState("");
 
   const [isCtrlPressed, setIsCtrlPressed] = useState(false);
 
@@ -74,12 +78,48 @@ export const SalesInvoice = (props: any) => {
   }, []);
 
 
+    useEffect(() => {
+      const handleKeyDown = (event:any) => {
+        if (event.key === 'F1') {
+          event.preventDefault(); // Prevent the default help menu from opening
+          // console.log('F1 key pressed');
+          setOpenViewModal(true);
+          // Add your custom logic here
+        }
+      };
+  
+      window.addEventListener('keydown', handleKeyDown);
+  
+      // Cleanup event listener on component unmount
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }, []);
+
   // Handle focus on the quantity input
   const handleInputFocus = (index: any, item: any) => {
     setActiveRowIndex(index);
     setActiveReservedQuantity(getReservedQuantity(item));
     setActiveCostPrice(getCostPrice(item));
+    getPreviousPrice(item);
   };
+
+  //get previous price for that item
+  const getPreviousPrice = async(item:any) =>{
+    
+    if(partyId && item?.id){
+      try {
+        const response = await getSaleInvoiceByParty(partyId,item?.id);
+        debugger;
+        if (response.data) {
+            setPreviousPrice(response?.data?.retailPrice)
+        }
+      } catch (error) {
+        console.error("error in fetching previous price:", error);
+      }
+    }
+    
+  }
   // Handle change in quantity input
 
   const contentRef = useRef<HTMLDivElement>(null);
@@ -149,7 +189,7 @@ export const SalesInvoice = (props: any) => {
 
   const onHandleSelect = (item: any) => {
     setSearchQuery("");
-    debugger;
+    // debugger;
     setItems((prev: any) => [...prev, item]);
   };
 
@@ -176,18 +216,18 @@ export const SalesInvoice = (props: any) => {
     };
     console.log(obj);
     if (isEditMode) {
-     
-      try {
-        const response = await updateSalesInvoice(obj, salesInvoiceId);
-        if (response.data) {
-          toast.success("Sales Invoice updated successfully");
-          // clearFields();
-          setConfirmationModal(true);
-        }
-      } catch (error) {
-        console.error("error in fetching party:", error);
-        toast.error("Error updating sales invoice");
-      }
+      // alert('update')
+      // try {
+      //   const response = await updateSalesInvoice(obj, salesInvoiceId);
+      //   if (response.data) {
+      //     toast.success("Sales Invoice updated successfully");
+      //     // clearFields();
+      //     setConfirmationModal(true);
+      //   }
+      // } catch (error) {
+      //   console.error("error in fetching party:", error);
+      //   toast.error("Error updating sales invoice");
+      // }
     } else {
       try {
         const response = await createSalesInvoice(obj);
@@ -207,7 +247,7 @@ export const SalesInvoice = (props: any) => {
 
   const clearFields = () => {
     setInvoiceNo("");
-    setDate("");
+    setDate(formatDateForInput(new Date().toISOString()));
     setPartyId("");
     setCustomerNo("");
     setPaymentTerms("cash");
@@ -228,10 +268,10 @@ export const SalesInvoice = (props: any) => {
     const reservedQty = getReservedQuantity(items[index]);
 
     if (updatedValue > reservedQty) {
-      const userConfirmed = window.confirm(
-        `The entered quantity (${updatedValue}) exceeds the reserved quantity (${reservedQty}). Do you want to continue?`
+       toast.info(
+        `The entered quantity (${updatedValue}) exceeds the reserved quantity (${reservedQty}).`
       );
-      if (!userConfirmed) return; // Stop further execution if user cancels
+     // Stop further execution if user cancels
     }
 
     setItems((prevItems: any) =>
@@ -283,20 +323,21 @@ export const SalesInvoice = (props: any) => {
 
     // Check if unit price is less than cost price
     if (updatedValue < costPrice) {
-      const userConfirmed = window.confirm(
-        `The entered unit price (${updatedValue}) is less than the cost price (${costPrice}). Do you want to continue?`
+      toast.info(
+        `The entered unit price (${updatedValue}) is less than the cost price (${costPrice}).`
       );
 
-      if (!userConfirmed) {
-        // Revert price back to cost price if user cancels
-        setItems((prevItems:any) =>
-          prevItems.map((item:any, i:any) =>
-            i === index ? { ...item, retailPrice: costPrice } : item
-          )
-        );
-      }
+      // if (!userConfirmed) {
+      //   // Revert price back to cost price if user cancels
+      //   setItems((prevItems:any) =>
+      //     prevItems.map((item:any, i:any) =>
+      //       i === index ? { ...item, retailPrice: costPrice } : item
+      //     )
+      //   );
+      // }
     }
   };
+
   return (
     <div>
       <ToastContainer />
@@ -307,36 +348,37 @@ export const SalesInvoice = (props: any) => {
             Sales Invoice
           </h2>
         )}
-        <div className="flex justify-between items-center  mb-6">
+        <div className="flex justify-between items-center  mb-1">
           <div
             className={
               printMode
                 ? "min-w-96 grid grid-cols-4 gap-6  p-6"
-                : "min-w-96 grid grid-cols-3 gap-6  p-6  "
+                : "min-w-96 grid grid-cols-4 gap-6  p-6  "
             }
           >
             <div>
-              <label className="block font-bold mb-2">Invoice No</label>
+              <label className="label">Invoice No</label>
               <input
                 type="text"
-                className="w-full border rounded px-4 py-2"
+                className="input"
                 value={invoiceNo}
                 readOnly
                 onChange={(e) => setInvoiceNo(e.target.value)}
                 placeholder="Invoice No"
+                onClick={()=>{setPrevQuery(invoiceNo);setOpenViewSIModal(true);}}
               />
             </div>
             <div>
-              <label className="block font-bold mb-2">Date</label>
+              <label className="label">Date</label>
               <input
                 type="date"
-                className="w-full border rounded px-4 py-2"
+                className="input"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
               />
             </div>
             {/* <div>
-              <label className="block font-bold mb-2">Customer No</label>
+              <label className="label">Customer No</label>
               <input
                 type="text"
                 className="w-full border rounded px-4 py-2"
@@ -348,10 +390,10 @@ export const SalesInvoice = (props: any) => {
             </div> */}
 
             <div>
-              <label className="block font-bold mb-2">Customer Name</label>
+              <label className="label">Customer Name</label>
               <input
                 type="text"
-                className="w-full border rounded px-4 py-2"
+                className="input"
                 value={customerName}
                 onClick={() => {
                   if (!isEditMode) {
@@ -363,8 +405,20 @@ export const SalesInvoice = (props: any) => {
                 placeholder="Customer Name"
               />
             </div>
+            <div>
+              <label className="label">Payment Terms</label>
+              <select
+                className="input py-0.5"
+                value={paymentTerms}
+                onChange={(e) => setPaymentTerms(e.target.value)}
+              >
+                <option value="credit">Credit</option>
+                <option value="cash">Cash</option>
+                <option value="cheque">Cheque</option>
+              </select>
+            </div>
             {/* <div>
-              <label className="block font-bold mb-2">Customer Address</label>
+              <label className="label">Customer Address</label>
               <input
                 type="text"
                 className="w-full border rounded px-4 py-2"
@@ -375,18 +429,7 @@ export const SalesInvoice = (props: any) => {
               />
             </div> */}
 
-            <div>
-              <label className="block font-bold mb-2">Payment Terms</label>
-              <select
-                className="w-full border rounded px-4 py-2"
-                value={paymentTerms}
-                onChange={(e) => setPaymentTerms(e.target.value)}
-              >
-                <option value="credit">Credit</option>
-                <option value="cash">Cash</option>
-                <option value="cheque">Cheque</option>
-              </select>
-            </div>
+           
           </div>
           {!printMode && (
             <div>
@@ -418,9 +461,10 @@ export const SalesInvoice = (props: any) => {
                     <td>{index + 1}</td>
                     <td>{getItemNo(item)}</td>
                     <td>
-                      {showEngDesc
+                      {/* {showEngDesc
                         ? getEnglishDescription(item)
-                        : getArabicDescription(item)}
+                        : getArabicDescription(item)} */}
+                        {getEnglishDescription(item)}
                     </td>
                     <td>{item.basicUnit}</td>
                     <td>{item.quantity}</td>
@@ -452,7 +496,12 @@ export const SalesInvoice = (props: any) => {
               <thead>
               {isCtrlPressed && 
                 <tr data-printable="false">
-                  <th></th>
+                  <th style={{ background: "aqua" }} className={"px-4 py-2"}>
+                    Prev unit price:{" "}
+                    <span className="font-bold">
+                      {activeRowIndex !== null ? previousPrice : "0"}
+                    </span>{" "}
+                  </th>
                   <th></th>
                   <th></th>
                   <th></th>
@@ -504,9 +553,9 @@ export const SalesInvoice = (props: any) => {
                         setShowEngDesc(!showEngDesc);
                       }}
                     >
-                      {showEngDesc
-                        ? getEnglishDescription(item)
-                        : getArabicDescription(item)}
+                      {/* {showEngDesc */}
+                        { getEnglishDescription(item) }
+                        {/* : getArabicDescription(item)} */}
                     </td>
                     {/* <td className="border border-gray-300 px-4 py-2">
                   {item.store}
@@ -649,11 +698,18 @@ export const SalesInvoice = (props: any) => {
           onClick={() => {
             onHandleSave();
           }}
+          
           type="button"
-          className="text-black border border-blue-600 hover:bg-sky-400 hover:text-white bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center dark:focus:ring-[#3b5998]/55 me-2 "
-        >
+          className={
+            isEditMode
+              ? "text-black border border-blue-600 cursor-no-drop hover:bg-zinc-400 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center  me-2"
+              : "text-black border border-blue-600 hover:bg-sky-400 hover:text-white bg-white  focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-2 py-1.5 text-center  inline-flex items-center dark:focus:ring-[#3b5998]/55 me-2 "
+          }
+          disabled={isEditMode}
+       >
           <ModifyIcon />
-          {isEditMode ? "Update" : "Save"}
+          {/* {isEditMode ? "Update" : "Save"} */}
+          Save
         </button>
 
         <button
@@ -670,6 +726,7 @@ export const SalesInvoice = (props: any) => {
         <button
           onClick={() => {
             setOpenViewSIModal(true);
+            setPrevQuery('')
             // setIsEditMode(false);
           }}
           type="button"
@@ -749,9 +806,11 @@ export const SalesInvoice = (props: any) => {
             onView={(item: any) => {
               setOpenViewSIModal(false);
               onHandleSISelect(item);
+              setPrevQuery('')
             }}
             otherComp={true}
             from="salesInvoice"
+            searchQuerry={prevQuery ? Number(prevQuery) - 1 : ''}
           />
         </OpenModal>
       )}

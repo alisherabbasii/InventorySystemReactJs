@@ -127,6 +127,10 @@ export const updateSalesInvoice = (updateData:any,id:any) => {
   return axios.put(`/salesinvoice/${id}`, updateData);
 };
 
+
+export const getSaleInvoiceByParty = (partyId="",itemId="") => {
+  return axios.get(`/salesinvoice/party/${partyId}/item/${itemId}`);
+};
 //purchasing routes
 export const getLastPINo = () => {
   return axios.get('/purchaseinvoice/last-item');

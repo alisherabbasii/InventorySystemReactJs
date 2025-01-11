@@ -76,16 +76,16 @@ export const SalesNPurchases = () => {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl text-[#217AA6] font-bold mb-6">
+      <h1 className="text-2xl text-[#217AA6] font-bold mb-2">
         Sales and Purchase
       </h1>
 
       {/* Tabs */}
-      <div className="flex space-x-2 mb-6">
+      <div className="flex space-x-2 mb-1">
       <button
           onClick={() => setActiveTab("quotation")}
           className={
-            "px-4 py-2 rounded " +
+            "px-4 py-1 rounded " +
             (activeTab === "quotation"
               ? "bg-blue-500 text-white"
               : "bg-zinc-100 text-black")
@@ -96,7 +96,7 @@ export const SalesNPurchases = () => {
         <button
           onClick={() => setActiveTab("invoice")}
           className={
-            "px-4 py-2 rounded " +
+            "px-4 py-1 rounded " +
             (activeTab === "invoice"
               ? "bg-blue-500 text-white"
               : "bg-zinc-100 text-black")
@@ -107,7 +107,7 @@ export const SalesNPurchases = () => {
         <button
           onClick={() => setActiveTab("return")}
           className={
-            "px-4 py-2 rounded " +
+            "px-4 py-1 rounded " +
             (activeTab === "return"
               ? "bg-blue-500 text-white"
               : "bg-zinc-100 text-black")
@@ -121,7 +121,7 @@ export const SalesNPurchases = () => {
         <button
           onClick={() => setActiveTab("purchasing")}
           className={
-            "px-4 py-2 rounded " +
+            "px-4 py-1 rounded " +
             (activeTab === "purchasing"
               ? "bg-blue-500 text-white"
               : "bg-zinc-100 text-black")
@@ -132,7 +132,7 @@ export const SalesNPurchases = () => {
         <button
           onClick={() => setActiveTab("purchaseReturn")}
           className={
-            "px-4 py-2 rounded " +
+            "px-4 py-1 rounded " +
             (activeTab === "purchaseReturn"
               ? "bg-blue-500 text-white"
               : "bg-zinc-100 text-black")

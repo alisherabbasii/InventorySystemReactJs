@@ -92,7 +92,7 @@ const ItemList = ({ onEdit,searchQuerry }: any) => {
             </thead>
             <tbody>
               {items.map((item: any, index) => (
-                <tr key={item.itemNo} className="text-center">
+                <tr onDoubleClick={() => onEdit(item)} key={item.itemNo} className="cursor-pointer text-center">
                   <td className="border border-gray-300 px-4 py-2">
                     {index + 1}
                   </td>

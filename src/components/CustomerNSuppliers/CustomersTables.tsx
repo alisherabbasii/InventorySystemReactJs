@@ -149,7 +149,7 @@ const CustomersTable = (props: any) => {
                 currentPage * itemsPerPage
               )
               .map((customer: any) => (
-                <tr key={customer.id} className="text-center bg-slate-50">
+                <tr onDoubleClick={() => handleEdit(customer)} key={customer.id} className="text-center bg-slate-50 cursor-pointer">
                   <td className="border-b border-[#EAECF0] px-4 py-2">
                     {customer?.party_no || "N/A"}
                   </td>

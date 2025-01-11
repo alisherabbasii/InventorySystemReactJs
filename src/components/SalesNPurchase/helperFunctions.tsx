@@ -22,7 +22,7 @@ export const getItemNo = (item:any) => {
   };
   
   export const getUnitPrice = (item:any) => {
-    debugger;
+    // debugger;
     return item?.retailPrice || item?.retailPrice || "";
   };
   
